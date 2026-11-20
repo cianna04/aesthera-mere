@@ -4,10 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRightIcon } from "@/components/Icons";
+import { useTreatmentsMenu } from "@/components/TreatmentsMenuProvider";
 import { treatmentCategories as categories } from "@/data/treatments";
 
 export default function Treatments() {
   const [expanded, setExpanded] = useState<number | null>(null);
+  const { setTreatmentsOpen } = useTreatmentsMenu();
 
   return (
     <section id="treatments" className="bg-[#FFFCF3] px-5 py-10 font-montserrat md:px-10 md:py-14">
@@ -88,9 +90,16 @@ export default function Treatments() {
           })}
         </div>
         <div className="mt-8 text-center">
-          <Link href="/treatments" className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#4C5534] px-7 text-xs font-semibold uppercase tracking-[0.08em] text-[#4C5534] transition-colors hover:bg-[#4C5534] hover:text-white">
-            View All Treatments <span aria-hidden="true" className="transition-transform group-hover:translate-x-1"><ArrowUpRightIcon className="h-4 w-4" /></span>
-          </Link>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="treatments-mega-menu"
+            onClick={() => setTreatmentsOpen(true)}
+            className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#4C5534] px-7 text-xs font-semibold uppercase tracking-[0.08em] text-[#4C5534] transition-colors hover:bg-[#4C5534] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#4C5534]"
+          >
+            View All Treatments
+            <ArrowUpRightIcon aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+          </button>
         </div>
       </div>
     </section>

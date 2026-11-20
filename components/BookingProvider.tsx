@@ -25,7 +25,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   return (
     <BookingContext.Provider value={value}>
       {children}
-      {open && <BookingModal open onClose={closeBooking} initialTreatment={initialTreatment} initialDoctor={initialDoctor} />}
+      {open && <BookingModal onClose={closeBooking} initialTreatment={initialTreatment} initialDoctor={initialDoctor} />}
     </BookingContext.Provider>
   );
 }

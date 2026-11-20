@@ -8,18 +8,16 @@ import {
   type FormEvent,
 } from "react";
 import { ArrowRightIcon } from "@/components/Icons";
+import { treatmentCategories } from "@/data/treatments";
 
 type BookingModalProps = {
-  open: boolean;
   onClose: () => void;
   initialTreatment?: string;
   initialDoctor?: string;
 };
 
 type AppointmentType = "consultation" | "treatment";
-type PatientType = "new" | "existing";
-
-const GREEN = "#4C5534";
+type ConsultationType = "in-clinic" | "online";
 
 const timeSlots = [
   "10:00 AM", "10:30 AM", "11:00 AM",
@@ -28,22 +26,31 @@ const timeSlots = [
   "3:30 PM", "4:00 PM",
 ];
 
-// Starter list for the frontend.
-// We can add all treatments from the clinic menu later.
-const treatments = [
-  "Aqua Reset Facial",
-  "Oxy Radiance Facial",
-  "Carbon Laser Facial",
-  "Korean Skin Reset Facial",
-  "Korean Acne Clarity Facial",
-  "Korean Whitening Facial",
-  "Korean Age Defy Facial",
-  "Thera SkinPen Microneedling",
-  "TheraTox",
-  "TheraTox Elite",
-  "Ultraformer MPT",
-  "Other Treatment",
-];
+const doctors = ["Dr. Dan", "Dr. Raine", "Dr. Ian"];
+
+const doctorLedGroups = new Set([
+  "botox-treatments",
+  "dermal-fillers",
+  "signature-skin-boosters",
+  "renewal-therapy",
+  "collagen-treatments",
+  "weight-management",
+]);
+
+const treatmentOptions = treatmentCategories.flatMap((category) =>
+  category.groups.flatMap((group) =>
+    group.treatments.map((treatment) => ({
+      name: treatment.name,
+      doctorLed: doctorLedGroups.has(group.slug),
+    }))
+  )
+);
+
+const doctorLedTreatments = new Set(
+  treatmentOptions
+    .filter((treatment) => treatment.doctorLed)
+    .map((treatment) => treatment.name)
+);
 
 const fieldClass =
   "w-full rounded-xl border border-[#E3DDD1] " +
@@ -98,7 +105,6 @@ function readableDate(value: string) {
 }
 
 export default function BookingModal({
-  open,
   onClose,
   initialTreatment = "",
   initialDoctor = "",
@@ -106,56 +112,34 @@ export default function BookingModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  const [today, setToday] = useState("");
+  const [today] = useState(getToday);
   const [month, setMonth] = useState<{
     year: number;
     index: number;
-  } | null>(null);
+  }>(() => {
+    const [year, monthNumber] = getToday().split("-").map(Number);
+    return { year, index: monthNumber - 1 };
+  });
 
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
   const [appointmentType, setAppointmentType] =
-    useState<AppointmentType>("consultation");
-  const [patientType, setPatientType] =
-    useState<PatientType>("new");
+    useState<AppointmentType>(initialTreatment ? "treatment" : "consultation");
+  const [consultationType, setConsultationType] =
+    useState<ConsultationType>("in-clinic");
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [treatment, setTreatment] = useState("");
+  const [treatment, setTreatment] = useState(initialTreatment);
+  const [doctor, setDoctor] = useState(initialDoctor);
   const [notes, setNotes] = useState("");
   const [privacy, setPrivacy] = useState(false);
   const [preview, setPreview] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-
-    const current = getToday();
-    const [year, monthNumber] = current.split("-").map(Number);
-
-    setToday(current);
-    setMonth({ year, index: monthNumber - 1 });
-    setDate("");
-    setTime("");
-
-    setAppointmentType(
-      initialTreatment ? "treatment" : "consultation"
-    );
-    setPatientType("new");
-    setTreatment(initialTreatment);
-
-    setName("");
-    setPhone("");
-    setEmail("");
-    setNotes("");
-    setPrivacy(false);
-    setPreview(false);
-  }, [open, initialTreatment, initialDoctor]);
-
-  useEffect(() => {
-    if (!open) return;
-
     const previousFocus = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
 
@@ -199,9 +183,7 @@ export default function BookingModal({
       window.removeEventListener("keydown", handleKeyDown);
       previousFocus?.focus();
     };
-  }, [open, onClose]);
-
-  if (!open) return null;
+  }, [onClose]);
 
   const year = month?.year ?? 2026;
   const monthIndex = month?.index ?? 0;
@@ -219,10 +201,16 @@ export default function BookingModal({
     makeDate(year, monthIndex, 1).slice(0, 7) >
       today.slice(0, 7);
 
-  const service =
-    appointmentType === "consultation"
-      ? "In-Clinic Consultation"
-      : treatment || "Treatment not selected";
+  const isDoctorTreatment =
+    appointmentType === "treatment" && doctorLedTreatments.has(treatment);
+  const showDoctorField =
+    isDoctorTreatment ||
+    (appointmentType === "consultation" && Boolean(initialDoctor));
+  const service = appointmentType === "consultation"
+    ? consultationType === "online"
+      ? "Online Consultation"
+      : "In-Clinic Consultation"
+    : treatment || "Treatment not selected";
 
   function changeMonth(direction: number) {
     const next = new Date(year, monthIndex + direction, 1);
@@ -326,11 +314,7 @@ export default function BookingModal({
                   {readableDate(date)}
                 </h4>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {[time, service,
-                    patientType === "new"
-                      ? "New Patient"
-                      : "Existing Patient"
-                  ].map((item) => (
+                  {[time, service].map((item) => (
                     <span
                       key={item}
                       className="rounded-full border border-[#E3DDD1]
@@ -341,17 +325,18 @@ export default function BookingModal({
                     </span>
                   ))}
                 </div>
-                {initialDoctor && (
+                {showDoctorField && doctor && (
                   <p className="mt-3 font-montserrat text-xs
                     text-[#4C5534]">
-                    Preferred Doctor: {initialDoctor}
+                    Preferred Doctor: {doctor}
                   </p>
                 )}
               </div>
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 {[
-                  ["Full Name", name],
+                  ["First Name", firstName],
+                  ["Last Name", lastName],
                   ["Contact Number", phone],
                   ["Email Address", email],
                   ["Appointment Type", appointmentType],
@@ -564,7 +549,15 @@ export default function BookingModal({
                         key={item}
                         type="button"
                         aria-pressed={appointmentType === item}
-                        onClick={() => setAppointmentType(item)}
+                        onClick={() => {
+                          setAppointmentType(item);
+                          if (item === "consultation") {
+                            setTreatment("");
+                            setDoctor(initialDoctor);
+                          } else if (!doctorLedTreatments.has(treatment)) {
+                            setDoctor("");
+                          }
+                        }}
                         className={`flex-1 rounded-full px-3 py-2.5
                           font-montserrat text-[12px]
                           capitalize transition
@@ -579,58 +572,62 @@ export default function BookingModal({
                 </div>
               </div>
 
-              {/* PATIENT TYPE */}
-              <div>
-                <p className={labelClass}>Patient Type</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    ["new", "New Patient"],
-                    ["existing", "Existing Patient"],
-                  ] as const).map(([value, label]) => (
+              {appointmentType === "consultation" && (
+                <div>
+                  <p className={labelClass}>Consultation Type</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      ["in-clinic", "In-Clinic"],
+                      ["online", "Online"],
+                    ] as const).map(([value, label]) => (
                     <button
                       key={value}
                       type="button"
-                      aria-pressed={patientType === value}
-                      onClick={() => setPatientType(value)}
+                      aria-pressed={consultationType === value}
+                      onClick={() => setConsultationType(value)}
                       className={`rounded-full border px-3
                         py-2.5 font-montserrat text-xs transition
-                        ${patientType === value
+                        ${consultationType === value
                           ? "border-[#4C5534] bg-[#4C5534]/10 text-[#4C5534]"
                           : "border-[#E3DDD1] bg-white text-[#777568] hover:bg-[#F6F3ED]"}`}
                     >
                       {label}
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {initialDoctor && (
-                <div className="rounded-xl bg-[#F6F3ED] p-3">
-                  <p className="font-montserrat text-[11px]
-                    text-[#777568]">
-                    Preferred Doctor
-                  </p>
-                  <p className="mt-1 font-montserrat text-sm
-                    font-medium text-[#4C5534]">
-                    {initialDoctor}
-                  </p>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* FULL NAME */}
-              <div>
-                <label htmlFor="booking-name" className={labelClass}>
-                  Full Name *
-                </label>
-                <input
-                  id="booking-name"
-                  required
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
-                  className={fieldClass}
-                />
+              {/* NAME */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="booking-first-name" className={labelClass}>
+                    First Name *
+                  </label>
+                  <input
+                    id="booking-first-name"
+                    required
+                    autoComplete="given-name"
+                    value={firstName}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    placeholder="First name"
+                    className={fieldClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="booking-last-name" className={labelClass}>
+                    Last Name *
+                  </label>
+                  <input
+                    id="booking-last-name"
+                    required
+                    autoComplete="family-name"
+                    value={lastName}
+                    onChange={(event) => setLastName(event.target.value)}
+                    placeholder="Last name"
+                    className={fieldClass}
+                  />
+                </div>
               </div>
 
               {/* CONTACT */}
@@ -682,17 +679,45 @@ export default function BookingModal({
                     id="booking-treatment"
                     required
                     value={treatment}
-                    onChange={(e) => setTreatment(e.target.value)}
+                    onChange={(event) => {
+                      const nextTreatment = event.target.value;
+                      setTreatment(nextTreatment);
+                      if (doctorLedTreatments.has(nextTreatment)) {
+                        if (!doctor && initialDoctor) setDoctor(initialDoctor);
+                      } else {
+                        setDoctor("");
+                      }
+                    }}
                     className={fieldClass}
                   >
                     <option value="">Select a treatment</option>
-                    {treatment && !treatments.includes(treatment) && (
+                    {treatment && !treatmentOptions.some((item) => item.name === treatment) && (
                       <option value={treatment}>{treatment}</option>
                     )}
-                    {treatments.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
+                    {treatmentOptions.map((item) => (
+                      <option key={item.name} value={item.name}>
+                        {item.name}
                       </option>
+                    ))}
+                    <option value="Other Treatment">Other Treatment</option>
+                  </select>
+                </div>
+              )}
+
+              {showDoctorField && (
+                <div>
+                  <label htmlFor="booking-doctor" className={labelClass}>
+                    Preferred Doctor
+                  </label>
+                  <select
+                    id="booking-doctor"
+                    value={doctor}
+                    onChange={(event) => setDoctor(event.target.value)}
+                    className={fieldClass}
+                  >
+                    <option value="">No preference</option>
+                    {doctors.map((item) => (
+                      <option key={item} value={item}>{item}</option>
                     ))}
                   </select>
                 </div>
@@ -730,10 +755,10 @@ export default function BookingModal({
                   text-[#777568]">
                   {time || "Choose a time"} · {service}
                 </p>
-                {initialDoctor && (
+                {showDoctorField && doctor && (
                   <p className="mt-1 font-montserrat text-xs
                     text-[#777568]">
-                    {initialDoctor}
+                    Preferred Doctor: {doctor}
                   </p>
                 )}
               </div>
@@ -752,7 +777,7 @@ export default function BookingModal({
                 <span>
                   I agree to the collection and processing of
                   my information for appointment booking,
-                  subject to the clinic's Privacy Policy.
+                  subject to the clinic&apos;s Privacy Policy.
                 </span>
               </label>
 

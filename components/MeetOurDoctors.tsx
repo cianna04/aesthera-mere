@@ -3,43 +3,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useBooking } from "@/components/BookingProvider";
 import { ArrowRightIcon } from "@/components/Icons";
-
-import doctor1Image from "@/public/images/doctors/doctor1.png";
-import doctor2Image from "@/public/images/doctors/doctor2.png";
 
 const doctors = [
   {
-    id: "doctor-1",
+    id: "dr-dan",
     name: "Dr. Dan",
     specialty: "Aesthetic Physician",
     credentials:
       "Specializes in facial injectables, skin boosters, biostimulators, and thread lifting.",
-    experience: "",
-    image: doctor1Image,
+    image: "/images/doctors/dr-dan.png",
   },
   {
-    id: "doctor-2",
+    id: "dr-raine",
     name: "Dr. Raine",
     specialty: "Aesthetic Physician",
     credentials:
       "Focuses on personalized treatments for skin concerns, injectables, dermal fillers, and skin rejuvenation.",
-    experience: "",
-    image: doctor2Image,
+    image: "/images/doctors/dr-raine.png",
   },
   {
-    id: "doctor-3",
+    id: "dr-ian",
     name: "Dr. Ian",
-    specialty: "Aesthetic Physician",
-    credentials: "[Input credentials]",
-    experience: "",
-    image: "/images/doctors/doctor3.png",
+    specialty: "",
+    credentials: "",
+    image: null,
   },
 ];
 
 export default function MeetOurDoctors() {
-  const { openBooking } = useBooking();
   return (
     <section
       id="our-doctors"
@@ -80,17 +72,20 @@ export default function MeetOurDoctors() {
               key={doctor.id}
               className="group flex h-full flex-col overflow-hidden rounded-[20px] border border-[#4C5534]/10 bg-[#4C5534] shadow-[0_8px_28px_rgba(76,85,52,0.09)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(76,85,52,0.17)]"
             >
-
               {/* Doctor image */}
               <div className="relative aspect-[4/3.8] overflow-hidden bg-[#FFFCF3]">
-                <Image
-                  src={doctor.image}
-                  alt={`Portrait of ${doctor.name}`}
-                  fill
-                  quality={90}
-                  sizes="(max-width: 767px) 100vw, 33vw"
-                  className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                />
+                {doctor.image ? (
+                  <Image
+                    src={doctor.image}
+                    alt={`Portrait of ${doctor.name}`}
+                    fill
+                    quality={90}
+                    sizes="(max-width: 767px) 100vw, 33vw"
+                    className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <div role="img" aria-label={`Portrait of ${doctor.name} coming soon`} className="flex h-full items-center justify-center bg-gradient-to-br from-[#FFFCF3] to-[#80755F]/20 font-seasons text-6xl text-[#4C5534]/35">DI</div>
+                )}
               </div>
 
               {/* Doctor information */}
@@ -107,13 +102,9 @@ export default function MeetOurDoctors() {
                 </h3>
 
                 {/* Specialty */}
-                {doctor.specialty && (
-                  <p className="mt-2 font-montserrat text-[11px] font-medium uppercase tracking-[0.12em] text-[#FFFCF3]/85">
-                    {doctor.specialty}
-                  </p>
-                )}
+                {doctor.specialty && <p className="mt-2 font-montserrat text-[11px] font-medium uppercase tracking-[0.12em] text-[#FFFCF3]/85">{doctor.specialty}</p>}
 
-                {/* Decorative divider */}
+                {/* Divider */}
                 <span className="my-4 h-px w-10 bg-[#FFFCF3]/40" />
 
                 {/* Expertise */}
@@ -123,21 +114,13 @@ export default function MeetOurDoctors() {
                   </p>
                 )}
 
-                {/* Experience */}
-                {doctor.experience && (
-                  <p className="mt-3 font-montserrat text-[11px] text-[#FFFCF3]/75">
-                    {doctor.experience}
-                  </p>
-                )}
-
-                {/* Booking button */}
+                {/* View Profile */}
                 <div className="mt-auto w-full pt-6">
-                  <button
-                    type="button"
-                    onClick={() => openBooking("", doctor.name)}
+                  <Link
+                    href={`/doctors#${doctor.id}`}
                     className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#FFFCF3] px-4 py-3 font-montserrat text-[12px] font-medium text-[#4C5534] transition-all duration-300 hover:bg-white hover:shadow-[0_4px_14px_rgba(0,0,0,0.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFCF3]"
                   >
-                    Book with {doctor.name}
+                    View Profile
 
                     <svg
                       width="15"
@@ -152,7 +135,7 @@ export default function MeetOurDoctors() {
                     >
                       <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </article>

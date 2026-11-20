@@ -76,7 +76,7 @@ export default function Consultation() {
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <button type="button" onClick={() => openBooking()} className="font-montserrat group inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#4C5534] bg-[#4C5534] px-7 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#35452F] hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#4C5534]">
-            <CalendarIcon /> <span>Book a Consultation</span><span className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"><ArrowUpRight /></span>
+            <CalendarIcon /> <span>Book Appointment</span><span className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"><ArrowUpRight /></span>
           </button>
           <a href="https://www.facebook.com/aestheramereph/" target="_blank" rel="noopener noreferrer" className="font-montserrat inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#4C5534]/30 px-6 text-xs font-semibold text-[#4C5534] hover:bg-[#F6F3ED]">Facebook <ArrowUpRightIcon className="h-4 w-4" /></a>
           <a href="https://www.instagram.com/aestheramereph/" target="_blank" rel="noopener noreferrer" className="font-montserrat inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#4C5534]/30 px-6 text-xs font-semibold text-[#4C5534] hover:bg-[#F6F3ED]">Instagram <ArrowUpRightIcon className="h-4 w-4" /></a>
