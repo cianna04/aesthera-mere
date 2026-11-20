@@ -28,7 +28,7 @@ function Comparison({ item, enlarged = false, eager = false }: {
         <figcaption>{side === "before" ? "Before" : "After"}</figcaption>
         <div className={styles.imageViewport}>
           <Image src={item.photo[side]} alt={`${side === "before" ? "Before" : "After"} ${item.title}, ${item.photo.view}${item.referenceOnly ? ", treatment reference" : ""}`}
-            sizes={sizes} quality={90} preload={eager} className={styles.photo} />
+            fill sizes={sizes} quality={90} preload={eager} className={styles.photo} />
         </div>
       </figure>)}
     </div>

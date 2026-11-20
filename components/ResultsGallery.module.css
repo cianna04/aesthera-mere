@@ -30,8 +30,8 @@
 .photoPanel { margin: 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: .5rem; }
 .photoPanel figcaption { flex: none; font-size: .8125rem; font-weight: 500; color: var(--muted); line-height: 1.5; }
 .photoPanel:last-child figcaption { color: var(--green); }
-.imageViewport { position: relative; flex: 1; min-height: 0; overflow: hidden; border-radius: 8px; background: #e9ece4; contain: layout paint; }
-.photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.imageViewport { position: relative; flex: 1; min-height: 0; overflow: hidden; border-radius: 8px; background: #e9ece4; }
+.photo { object-fit: cover; object-position: center; }
 .stacked { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); }
 .stacked .photo { object-position: 50% 65%; }
 .moreResults { margin-top: 2.5rem; text-align: center; }
