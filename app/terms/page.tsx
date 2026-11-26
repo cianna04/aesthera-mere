@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TermsSectionNav from "@/components/TermsSectionNav";
+import { CalendarIcon } from "@/components/Icons";
 
 export const metadata: Metadata = {
   title: "Terms of Use | Aesthera Mère",
@@ -73,23 +74,21 @@ export default function TermsPage() {
           </nav>
 
           {/* Page Header */}
-          <header className="max-w-[850px] pb-10 pt-10 md:pb-14 md:pt-14">
-            <p className="font-montserrat text-[11px] font-semibold uppercase tracking-[0.23em] text-[#80755F]">
+          <header className="mx-auto max-w-[850px] pb-10 pt-10 text-center md:pb-14 md:pt-14">
+            <p className="font-montserrat text-[11px] font-semibold uppercase tracking-[0.16em] text-[#80755F]">
               Aesthera Mère Beauty Creations
             </p>
 
-            <h1 className="mt-4 font-seasons text-[clamp(3.5rem,7vw,5.8rem)] leading-[1.05] tracking-[-0.025em]">
+            <h1 className="mt-4 font-seasons text-[clamp(3.4rem,5.5vw,5.2rem)] leading-[1.05] tracking-[-0.025em]">
               Terms of Use
             </h1>
 
-            <p className="mt-6 max-w-[720px] font-montserrat text-[15px] leading-[1.9] text-[#696D5C]">
-              These terms explain the conditions for using
-              our website, browsing treatment information,
-              viewing promotions, and making inquiries
-              about our aesthetic services.
+            <p className="mx-auto mt-2 max-w-[720px] font-montserrat text-[14px] leading-[1.8] text-[#696D5C] md:text-[15px]">
+             These terms explain the conditions for using our website, browsing treatment information, viewing promotions, and making inquiries about our aesthetic services.
             </p>
 
-            <p className="mt-5 font-montserrat text-[12px] text-[#80755F]">
+            <p className="mt-5 flex items-center justify-center gap-2 font-montserrat text-[12px] text-[#80755F]">
+              <CalendarIcon className="h-4 w-4 shrink-0" />
               Last updated: 23 November 2026
             </p>
           </header>
@@ -211,14 +210,11 @@ export default function TermsPage() {
                   an appointment.
                 </p>
 
-                <div className="mt-6 rounded-[14px] border-l-[3px] border-[#B6A47D] bg-[#F6F3ED] px-5 py-4">
-                  <p className="font-montserrat text-[13px] leading-[1.9] text-[#4C5534]">
-                    Important: An appointment preview
-                    is not a confirmed booking.
-                    Please contact the clinic directly
-                    to arrange and confirm an appointment.
-                  </p>
-                </div>
+                <p className={bodyClass}>
+                  <strong className="font-semibold text-[#4C5534]">Important:</strong>{" "}
+                  An appointment preview is not a confirmed booking.
+                  Please contact the clinic directly to arrange and confirm an appointment.
+                </p>
 
                 <p className={bodyClass}>
                   Appointment availability may depend
