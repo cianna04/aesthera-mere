@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactHero from "@/components/ContactHero";
+import ContactMap from "@/components/ContactMap";
 import { ChevronRightIcon } from "@/components/Icons";
 
 export const metadata: Metadata = {
@@ -61,7 +62,7 @@ export default function ContactPage() {
                   Open in Google Maps <ChevronRightIcon className="h-4 w-4" />
                 </a>
               </div>
-              <iframe title="Map to Aesthera Mère Beauty Creations" src="https://www.google.com/maps?q=14.5705298,121.0519195&z=16&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="min-h-[340px] w-full border-0 md:min-h-[440px]" />
+              <ContactMap />
             </div>
           </div>
         </section>

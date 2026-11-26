@@ -214,16 +214,15 @@ export default function PrivacyPolicyPage() {
                 </p>
 
                 <p className={bodyClass}>
-                  In the current implementation, this
-                  preference is saved locally and does not
-                  activate analytics or advertising services.
-                  This notice will be updated if those
-                  website features change.
+                  Allowing optional cookies enables the embedded
+                  Google Map on our Contact page. Declining keeps
+                  the map off unless you choose to load it once.
+                  The website does not run analytics or advertising
+                  scripts.
                 </p>
 
                 <p className={bodyClass}>
-                  Some pages may include embedded Google Maps.
-                  Loading an embedded map may allow Google
+                  Loading the embedded map may allow Google
                   to receive technical information about
                   your visit and use its own cookies or
                   similar technologies.

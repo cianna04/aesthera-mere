@@ -47,10 +47,6 @@
 .viewAll { min-height: 48px; min-width: 190px; padding: .8rem 1.75rem; border: 1px solid var(--green); border-radius: 100px; font-size: .875rem; font-weight: 500; cursor: pointer; background: transparent; transition: color .2s, background .2s; }
 .viewAll:hover { background: var(--green); color: #fffcf3; }
 .resultsNote { margin-top: 2rem; font-size: .8125rem; color: var(--muted); text-align: center; }
-.comingSoonGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin-top: 3rem; }
-.comingSoonCard { min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; padding: 2rem; border: 1px solid var(--line); border-radius: 14px; background: #f3f4ec; text-align: center; }
-.comingSoonCard span { font-family: var(--font-seasons), Georgia, serif; font-size: clamp(1.75rem, 3vw, 2.5rem); }
-.comingSoonCard p { color: var(--muted); font-size: .8125rem; line-height: 1.5; }
 .dialog { position: fixed; inset: 0; margin: auto; width: min(94vw, 960px); height: min(720px, 90dvh); max-width: none; max-height: 90dvh; padding: 0; border: 0; border-radius: 16px; overflow: hidden; scrollbar-width: none; box-shadow: 0 30px 100px #0004; }
 .dialog::-webkit-scrollbar { display: none; }
 .dialog::backdrop { background: #20291ed9; backdrop-filter: blur(5px); }
@@ -74,7 +70,6 @@
   .hero p { font-size: .875rem; margin-top: 1rem; }
   .gallery { padding-bottom: 2.5rem; }
   .groups, .wideGroup .groupGrid { grid-template-columns: minmax(0, 1fr); }
-  .comingSoonGrid { grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 2rem; }
   .groups { gap: 2rem; }
   .groupGrid { gap: 1rem; }
   .groupHeading { margin-bottom: .75rem; }

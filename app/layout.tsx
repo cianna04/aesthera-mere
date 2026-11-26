@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono, Montserrat, Cormorant_Garamond } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { BookingProvider } from "@/components/BookingProvider";
 import { TreatmentsMenuProvider } from "@/components/TreatmentsMenuProvider";
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
+const montserrat = localFont({
+  src: "../public/fonts/Montserrat-Latin.woff2",
   variable: "--font-montserrat",
+  weight: "100 900",
   display: "swap",
 });
 
-const seasons = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const seasons = localFont({
+  src: "../public/fonts/CormorantGaramond-Latin.woff2",
+  weight: "400 700",
   variable: "--font-seasons",
   display: "swap",
 });

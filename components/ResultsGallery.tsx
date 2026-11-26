@@ -59,6 +59,7 @@ function ResultViewer({ item, position, total, onClose, onPrevious, onNext }: {
       onCancel={(event) => { event.preventDefault(); onClose(); }}
       onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
       onKeyDown={(event) => {
+        if (total < 2) return;
         if (event.key === "ArrowLeft") { event.preventDefault(); onPrevious(); }
         if (event.key === "ArrowRight") { event.preventDefault(); onNext(); }
       }}>
@@ -70,11 +71,11 @@ function ResultViewer({ item, position, total, onClose, onPrevious, onNext }: {
         <div className={styles.viewerPhotoArea}><Comparison item={item} enlarged /></div>
         <div className={styles.viewerFooter}>
           <p id="result-viewer-note">Results vary per individual.</p>
-          <div className={styles.viewerControls}>
-            <button type="button" className={styles.iconButton} aria-label="Previous result" onClick={onPrevious} disabled={total < 2}><ChevronLeftIcon /></button>
+          {total > 1 && <div className={styles.viewerControls}>
+            <button type="button" className={styles.iconButton} aria-label="Previous result" onClick={onPrevious}><ChevronLeftIcon /></button>
             <span aria-live="polite">{position} / {total}</span>
-            <button type="button" className={styles.iconButton} aria-label="Next result" onClick={onNext} disabled={total < 2}><ChevronRightIcon /></button>
-          </div>
+            <button type="button" className={styles.iconButton} aria-label="Next result" onClick={onNext}><ChevronRightIcon /></button>
+          </div>}
         </div>
       </div>
     </dialog>
@@ -95,8 +96,9 @@ export default function ResultsGallery() {
     : filtered.slice(0, PREVIEW_COUNT);
   const visible = expanded ? filtered : featured;
   const visibleGroups = treatmentNames.map((title) => ({ title, items: visible.filter((item) => item.title === title) })).filter((group) => group.items.length);
-  const selectedIndex = visible.findIndex((item) => item.id === selectedId);
-  const selected = visible[selectedIndex];
+  const selected = comparisons.find((item) => item.id === selectedId);
+  const selectedGroup = selected ? comparisons.filter((item) => item.title === selected.title) : [];
+  const selectedIndex = selectedGroup.findIndex((item) => item.id === selectedId);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -115,8 +117,8 @@ export default function ResultsGallery() {
   }
 
   function changeResult(direction: number) {
-    if (!visible.length) return;
-    setSelectedId(visible[(selectedIndex + direction + visible.length) % visible.length].id);
+    if (selectedGroup.length < 2) return;
+    setSelectedId(selectedGroup[(selectedIndex + direction + selectedGroup.length) % selectedGroup.length].id);
   }
 
   return (
@@ -156,14 +158,8 @@ export default function ResultsGallery() {
         </div>
         {filtered.length > featured.length && <div className={styles.moreResults}><button type="button" className={styles.viewAll} aria-expanded={expanded} aria-controls="results-grid" onClick={() => setExpanded((value) => !value)}>{expanded ? "Show fewer results" : "View all results"}</button></div>}
         <p className={styles.resultsNote}>Results vary per individual.</p>
-        {filter === "All treatments" && <div className={styles.comingSoonGrid} aria-label="Upcoming results">
-          {[1, 2].map((slot) => <div key={slot} className={styles.comingSoonCard}>
-            <span>Coming Soon</span>
-            <p>More treatment results are on the way.</p>
-          </div>)}
-        </div>}
       </section>
-      {selected && <ResultViewer item={selected} position={selectedIndex + 1} total={visible.length} onClose={closeViewer} onPrevious={() => changeResult(-1)} onNext={() => changeResult(1)} />}
+      {selected && <ResultViewer item={selected} position={selectedIndex + 1} total={selectedGroup.length} onClose={closeViewer} onPrevious={() => changeResult(-1)} onNext={() => changeResult(1)} />}
     </div>
   );
 }

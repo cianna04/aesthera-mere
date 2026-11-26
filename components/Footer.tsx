@@ -6,11 +6,15 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpIcon, ChevronRightIcon } from "@/components/Icons";
+import {
+  COOKIE_CONSENT_KEY,
+  readCookieConsent,
+  saveCookieConsent,
+  type CookieConsent,
+} from "@/lib/cookieConsent";
 
 const GOOGLE_MAPS_URL =
   "https://www.google.com/maps/place/Aesthera+Mere+Beauty+Creations/@14.570535,121.0493446,17z/data=!4m8!3m7!1s0x3397c9ff0d4effff:0x8f90fb8a8325a1c2!8m2!3d14.5705298!4d121.0519195!9m1!1b1!16s%2Fg%2F11nb_t70wc";
-
-const CONSENT_KEY = "aesthera-cookie-consent";
 
 const socialLinks = [
   {
@@ -91,41 +95,36 @@ function FooterHeading({
 export default function Footer() {
   const [cookieVisible, setCookieVisible] = useState(false);
   const [cookieReady, setCookieReady] = useState(false);
+  const [consent, setConsent] = useState<CookieConsent>(null);
   const [year, setYear] = useState(2026);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      try {
-        setCookieVisible(
-          !localStorage.getItem(CONSENT_KEY)
-        );
-      } catch {
-        setCookieVisible(true);
-      }
-
+      const saved = readCookieConsent();
+      setConsent(saved);
+      setCookieVisible(saved === null);
       setCookieReady(true);
       setYear(new Date().getFullYear());
     }, 0);
 
-    return () => window.clearTimeout(timeoutId);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== COOKIE_CONSENT_KEY) return;
+      const saved = readCookieConsent();
+      setConsent(saved);
+      setCookieVisible(saved === null);
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
-  const saveConsent = (
-    choice: "accepted" | "rejected"
-  ) => {
-    try {
-      localStorage.setItem(CONSENT_KEY, choice);
-    } catch {
-      // Browser storage may be unavailable.
-    }
-
+  const saveConsent = (choice: Exclude<CookieConsent, null>) => {
+    saveCookieConsent(choice);
+    setConsent(choice);
     setCookieVisible(false);
-
-    window.dispatchEvent(
-      new CustomEvent("aesthera-cookie-consent", {
-        detail: choice,
-      })
-    );
   };
 
   return (
@@ -325,20 +324,25 @@ export default function Footer() {
           aria-label="Cookie preferences"
           className="fixed bottom-4 left-4 right-4 z-[100] mx-auto max-w-[680px] rounded-[16px] border border-[#80755F]/25 bg-[#FFFCF3] p-5 shadow-[0_12px_45px_rgba(76,85,52,0.18)] md:p-6"
         >
-          <h2 className="font-bodoni text-[23px] text-[#4C5534]">
+          <h2 className="font-seasons text-[28px] leading-tight text-[#4C5534]">
             Your Privacy Matters
           </h2>
 
           <p className="mt-2 font-montserrat text-[12px] leading-[1.8] text-[#80755F]">
-            We use essential storage to support this website.
-            With your permission, we may also use optional
-            cookies to improve your experience.
+            We store your preference in this browser. Allowing optional cookies
+            loads the Google Map on our Contact page; declining keeps it off.
+            You can change your choice here anytime.
           </p>
+
+          {consent && <p className="mt-2 font-montserrat text-[11px] text-[#4C5534]" role="status">
+            Current choice: {consent === "accepted" ? "Optional cookies allowed" : "Optional cookies declined"}
+          </p>}
 
           <div className="mt-5 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => saveConsent("accepted")}
+              aria-pressed={consent === "accepted"}
               className="min-h-11 rounded-full bg-[#4C5534] px-6 py-3 font-montserrat text-[11px] font-medium text-[#FFFCF3] transition-colors hover:bg-[#4F6442]"
             >
               Accept Optional Cookies
@@ -347,6 +351,7 @@ export default function Footer() {
             <button
               type="button"
               onClick={() => saveConsent("rejected")}
+              aria-pressed={consent === "rejected"}
               className="min-h-11 rounded-full border border-[#80755F] px-6 py-3 font-montserrat text-[11px] font-medium text-[#4C5534] transition-colors hover:bg-[#80755F] hover:text-white"
             >
               Reject Optional Cookies
