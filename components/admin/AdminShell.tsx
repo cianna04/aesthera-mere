@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { ChevronRightIcon } from "@/components/Icons";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode, type SVGProps } from "react";
+import { ADMIN_LOGIN_PATH, ADMIN_SESSION_KEY, createAdminSession, isAdminSessionActive } from "@/lib/admin-session";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -65,7 +66,7 @@ const navigationSections = [
   },
 ];
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({ onNavigate, onLogout }: { onNavigate?: () => void; onLogout: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -126,6 +127,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             View website
             <ChevronRightIcon className="h-4 w-4" />
           </Link>
+          <button type="button" onClick={onLogout} className="mt-3 flex w-full cursor-pointer items-center justify-between font-montserrat text-[10px] font-semibold uppercase tracking-[0.12em] text-[#f8f4eb]/80 transition-colors hover:text-white">
+            Log out
+            <Icon className="h-4 w-4"><path d="M10 17l5-5-5-5M15 12H3" /><path d="M12 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6" /></Icon>
+          </button>
         </div>
       </div>
     </div>
@@ -133,6 +138,61 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export default function AdminShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
+  if (pathname === ADMIN_LOGIN_PATH) return children;
+
+  return <AdminSessionGate>{children}</AdminSessionGate>;
+}
+
+function AdminSessionGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    let lastTouch = 0;
+    function signOut() {
+      try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch { /* Storage may be unavailable. */ }
+      setChecked(false);
+      router.replace(ADMIN_LOGIN_PATH);
+    }
+    function checkSession(refresh = false) {
+      try {
+        const saved = sessionStorage.getItem(ADMIN_SESSION_KEY);
+        if (!isAdminSessionActive(saved)) { signOut(); return; }
+        if (saved === "1" || (refresh && Date.now() - lastTouch > 30_000)) {
+          sessionStorage.setItem(ADMIN_SESSION_KEY, createAdminSession());
+          lastTouch = Date.now();
+        }
+        setChecked(true);
+      } catch { signOut(); }
+    }
+    const frame = window.requestAnimationFrame(() => {
+      checkSession();
+    });
+    const onActivity = () => checkSession(true);
+    const onVisible = () => { if (document.visibilityState === "visible") checkSession(true); };
+    for (const event of ["pointerdown", "keydown", "scroll", "pointermove"] as const) window.addEventListener(event, onActivity, { passive: true });
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = window.setInterval(() => checkSession(), 30_000);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearInterval(interval);
+      for (const event of ["pointerdown", "keydown", "scroll", "pointermove"] as const) window.removeEventListener(event, onActivity);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [router]);
+
+  function logOut() {
+    try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch { /* Storage may be unavailable. */ }
+    setChecked(false);
+    router.replace(ADMIN_LOGIN_PATH);
+  }
+
+  return checked ? <AdminWorkspaceShell onLogout={logOut}>{children}</AdminWorkspaceShell> : null;
+}
+
+function AdminWorkspaceShell({ children, onLogout }: { children: ReactNode; onLogout: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -152,14 +212,14 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-[#f4f1ea] text-[#28332b]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[252px] xl:block">
-        <SidebarContent />
+        <SidebarContent onLogout={onLogout} />
       </aside>
 
       {menuOpen && (
         <div className="fixed inset-0 z-50 xl:hidden" role="dialog" aria-modal="true" aria-label="Admin navigation">
           <button type="button" className="absolute inset-0 bg-[#172119]/55 backdrop-blur-sm" aria-label="Close admin navigation" onClick={() => setMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-[min(86vw,320px)] shadow-2xl">
-            <SidebarContent onNavigate={() => setMenuOpen(false)} />
+            <SidebarContent onNavigate={() => setMenuOpen(false)} onLogout={onLogout} />
           </aside>
         </div>
       )}
