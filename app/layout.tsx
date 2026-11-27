@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { BookingProvider } from "@/components/BookingProvider";
 import { TreatmentsMenuProvider } from "@/components/TreatmentsMenuProvider";
+import WebsiteAssistant from "@/components/WebsiteAssistant";
 
 const montserrat = localFont({
   src: "../public/fonts/Montserrat-Latin.woff2",
@@ -42,7 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${montserrat.variable} ${seasons.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen flex flex-col"><BookingProvider><TreatmentsMenuProvider>{children}</TreatmentsMenuProvider></BookingProvider></body>
+      <body className="min-h-screen flex flex-col"><BookingProvider><TreatmentsMenuProvider>{children}<Suspense fallback={null}><WebsiteAssistant /></Suspense></TreatmentsMenuProvider></BookingProvider></body>
     </html>
   );
 }

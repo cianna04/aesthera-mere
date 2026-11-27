@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:assistant": "node --experimental-strip-types --test tests/assistant-policy.test.ts tests/assistant-content.test.ts tests/assistant-availability.test.ts tests/promo-visibility.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

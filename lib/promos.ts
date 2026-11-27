@@ -1,4 +1,5 @@
 import type { PromoCard, PricingTable } from "@/types/promo";
+import { isPublicPromoOnDate } from "@/lib/promo-visibility";
 
 const CURRENT_OFFER_TERMS = [
   "Promotion availability is confirmed when booking.",
@@ -445,11 +446,7 @@ export async function getPromos(): Promise<PromoCard[]> {
   const todayInManila = manilaNow.toISOString().slice(0, 10);
 
   return PROMOTIONS
-    .filter((promo) => {
-      if (promo.isActive === false) return false;
-      if (promo.validUntil && promo.validUntil < todayInManila) return false;
-      return true;
-    })
+    .filter((promo) => isPublicPromoOnDate(promo, todayInManila))
     .sort(
       (a, b) =>
         new Date(b.publishedAt ?? 0).getTime() -

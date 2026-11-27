@@ -20,6 +20,8 @@ export interface DoctorProfile {
   leaveStartDate: string | null;
   leaveEndDate: string | null;
   weeklySchedule: DoctorWorkingDay[];
+  /** Only true when weeklySchedule is approved for public availability answers. */
+  scheduleVerified?: boolean;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
