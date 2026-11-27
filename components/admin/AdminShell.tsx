@@ -60,7 +60,7 @@ const navigationSections = [
       { label: "Messages", href: "/admin#module-map", icon: <Icon><path d="M4 4h16v12H7l-3 3Z" /></Icon> },
       { label: "Reports", href: "/admin/reports", icon: <Icon><path d="M4 19V9M10 19V5M16 19v-7M22 19V3" /></Icon> },
       { label: "Users & roles", href: "/admin#module-map", icon: peopleIcon },
-      { label: "Settings", href: "/admin#module-map", icon: settingsIcon },
+      { label: "Settings", href: "/admin/settings", icon: settingsIcon },
       { label: "Audit log", href: "/admin#module-map", icon: <Icon><path d="M9 12l2 2 4-4" /><path d="M12 22a10 10 0 1 0-9.5-7" /></Icon> },
     ],
   },
