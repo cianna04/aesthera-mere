@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { ChevronRightIcon } from "@/components/Icons";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode, type SVGProps } from "react";
+import AppointmentEditor from "@/components/admin/AppointmentEditor";
+import { APPOINTMENTS_STORAGE_KEY, linkPatientBookings } from "@/components/admin/patientLinks";
 
 type Status = "Pending" | "Confirmed" | "Completed";
-type Appointment = { id: string; date?: string; time: string; client: string; treatment: string; doctor: string; status: Status; [key: string]: unknown };
+type Appointment = { id: string; patientId?: string; date?: string; time: string; client: string; treatment: string; doctor: string; status: Status; [key: string]: unknown };
 type PromoSummary = { id: string; title: string; badge: string };
 type Props = { treatmentCount: number; categoryCount: number; resultCount: number; promos: PromoSummary[]; promoCount: number };
 type IconProps = SVGProps<SVGSVGElement>;
 
-const STORAGE_KEY = "aesthera-admin-overview-appointments-v1";
-const inputClass = "min-h-11 w-full rounded-xl border border-[#334b39]/10 bg-[#f7f6f1] px-3.5 font-montserrat text-[10px] text-[#354239] outline-none focus:border-[#344b38]/35 focus:ring-3 focus:ring-[#344b38]/8";
+const STORAGE_KEY = APPOINTMENTS_STORAGE_KEY;
 const seedAppointments: Appointment[] = [
   { id: "APT-1024", time: "09:00", client: "Sofia Reyes", treatment: "Oxy Radiance Facial", doctor: "Dr. Raine", status: "Confirmed" },
   { id: "APT-1025", time: "10:30", client: "Bianca Lim", treatment: "Skin consultation", doctor: "Dr. Dan", status: "Confirmed" },
@@ -40,7 +41,7 @@ function manilaDateKey() {
 }
 
 export default function OverviewWorkspace({ treatmentCount, categoryCount, resultCount, promos, promoCount }: Props) {
-  const [appointments, setAppointments] = useState(seedAppointments);
+  const [appointments, setAppointments] = useState(() => linkPatientBookings(seedAppointments));
   const [hydrated, setHydrated] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export default function OverviewWorkspace({ treatmentCount, categoryCount, resul
     queueMicrotask(() => {
       try {
         const saved = window.localStorage.getItem(STORAGE_KEY);
-        if (saved) setAppointments(JSON.parse(saved) as Appointment[]);
+        if (saved) setAppointments(linkPatientBookings(JSON.parse(saved) as Appointment[]));
       } catch { /* Keep the sample schedule when browser storage is unavailable. */ }
       setHydrated(true);
     });
@@ -89,14 +90,16 @@ export default function OverviewWorkspace({ treatmentCount, categoryCount, resul
     const client = String(data.get("client") ?? "").trim();
     const next: Appointment = {
       id: `APT-${Date.now().toString().slice(-6)}`,
-      date: manilaDateKey(), time: String(data.get("time") ?? "09:00"), client,
+      date: String(data.get("date") ?? manilaDateKey()), time: String(data.get("time") ?? "09:00"), client,
       treatment: String(data.get("treatment") ?? "Consultation"),
-      doctor: String(data.get("doctor") ?? "Dr. Raine"), status: "Pending",
+      doctor: String(data.get("doctor") ?? "Dr. Raine"), type: String(data.get("type") ?? "Treatment"),
+      source: String(data.get("source") ?? "Walk-in"), phone: String(data.get("phone") ?? "").trim(),
+      email: String(data.get("email") ?? "").trim(), note: String(data.get("note") ?? "").trim(), status: "Pending",
     };
-    setAppointments((current) => [...current, next]);
+    setAppointments((current) => linkPatientBookings([...current, next]));
     setFormOpen(false);
     setSelectedId(next.id);
-    setNotice(`${client} was added to today’s schedule.`);
+    setNotice(`${client} was added to the schedule.`);
   }
 
   function updateStatus(status: Status) {
@@ -150,7 +153,7 @@ export default function OverviewWorkspace({ treatmentCount, categoryCount, resul
         </div>
       </div>
 
-      {formOpen && <Modal title="New appointment" onClose={() => setFormOpen(false)}><form onSubmit={saveAppointment} className="mt-5 grid gap-4"><Field label="Patient name"><input name="client" required autoFocus placeholder="e.g. Maria Santos" className={inputClass} /></Field><Field label="Treatment"><input name="treatment" required placeholder="e.g. Skin consultation" className={inputClass} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Time"><input name="time" required type="time" defaultValue="09:00" className={inputClass} /></Field><Field label="Doctor"><select name="doctor" className={inputClass}><option>Dr. Raine</option><option>Dr. Dan</option></select></Field></div><p className="font-montserrat text-[8px] leading-4 text-[#8a9089]">New appointments start as pending.</p><button type="submit" className="min-h-11 rounded-full bg-[#344c38] px-5 font-montserrat text-[9px] font-bold uppercase tracking-[0.1em] text-white">Add to schedule</button></form></Modal>}
+      {formOpen && <AppointmentEditor defaultDate={manilaDateKey()} onClose={() => setFormOpen(false)} onSubmit={saveAppointment} />}
       {selected && <Modal title="Appointment details" onClose={() => setSelectedId(null)}><div className="mt-5 rounded-2xl bg-[#f5f3ed] p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-seasons text-2xl text-[#334b38]">{selected.client}</p><p className="mt-1 font-montserrat text-[9px] text-[#8a9089]">{selected.id}</p></div><StatusBadge status={selected.status} /></div><dl className="mt-5 grid gap-3">{[["Time", `${displayTime(selected.time).time} ${displayTime(selected.time).period}`], ["Treatment", selected.treatment], ["Doctor", selected.doctor]].map(([label, value]) => <div key={label} className="flex justify-between gap-4 border-t border-[#334b39]/8 pt-3"><dt className="font-montserrat text-[8px] uppercase tracking-[0.1em] text-[#92978f]">{label}</dt><dd className="text-right font-montserrat text-[9px] font-semibold text-[#4e5a51]">{value}</dd></div>)}</dl></div><div className="mt-4 grid grid-cols-2 gap-2"><button type="button" onClick={() => updateStatus("Confirmed")} className="min-h-10 rounded-full bg-[#3c5841] px-3 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] text-white">Confirm</button><button type="button" onClick={() => updateStatus("Completed")} className="min-h-10 rounded-full border border-[#3c5841]/20 px-3 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] text-[#3f5844]">Complete</button><button type="button" onClick={removeSelected} className="col-span-2 min-h-10 rounded-full border border-[#8b665d]/20 px-3 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] text-[#86645c]">Remove appointment</button></div></Modal>}
       {notice && <div role="status" className="fixed bottom-5 right-5 z-[70] max-w-sm rounded-2xl bg-[#29382b] px-5 py-4 font-montserrat text-[10px] text-white shadow-2xl">{notice}</div>}
     </main>
@@ -160,10 +163,6 @@ export default function OverviewWorkspace({ treatmentCount, categoryCount, resul
 function StatusBadge({ status }: { status: Status }) {
   const styles = status === "Confirmed" ? "bg-[#e8efe6] text-[#507057]" : status === "Completed" ? "bg-[#e3e9ed] text-[#4d6471]" : "bg-[#f2eadc] text-[#8a6c3f]";
   return <span className={`shrink-0 rounded-full px-2.5 py-1.5 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] ${styles}`}>{status}</span>;
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="grid gap-2"><span className="font-montserrat text-[8px] font-bold uppercase tracking-[0.1em] text-[#667068]">{label}</span>{children}</label>;
 }
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
