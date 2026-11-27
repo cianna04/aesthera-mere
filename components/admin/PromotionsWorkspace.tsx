@@ -108,7 +108,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
       const src = typeof reader.result === "string" ? reader.result : "";
       setImagePreview(src);
       update("image", src);
-      setNotice("Image preview loaded. Persistent media storage will be connected with the backend.");
+      setNotice("Promotion image selected.");
     };
     reader.readAsDataURL(file);
   }
@@ -126,10 +126,10 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
     const now = new Date().toISOString();
     if (editingId) {
       setPromos((current) => current.map((item) => item.id === editingId ? { ...item, ...form } : item));
-      setNotice("Promotion updated in this preview session only.");
+      setNotice("Promotion updated.");
     } else {
       setPromos((current) => [...current, { ...form, id: `promo-${Date.now()}` }]);
-      setNotice("Promotion added in this preview session only.");
+      setNotice("Promotion added.");
     }
     closeForm();
     void now;
@@ -137,7 +137,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
 
   function toggleActive(promo: PromoCard) {
     setPromos((current) => current.map((item) => item.id === promo.id ? { ...item, isActive: item.isActive === false } : item));
-    setNotice(`${promo.title} marked ${promo.isActive === false ? "active" : "inactive"} in this preview session only.`);
+    setNotice(`${promo.title} marked ${promo.isActive === false ? "active" : "inactive"}.`);
   }
 
   function addPricingTable() {
@@ -155,7 +155,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
 
   function removePricingTable(id: string) {
     setPricingTables((current) => current.filter((table) => table.id !== id));
-    setNotice("Package removed from this editing session.");
+    setNotice("Package removed.");
   }
 
   function addPricingRow(id: string) {
@@ -176,7 +176,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
     if (!pendingDelete) return;
     setPromos((current) => current.filter((item) => item.id !== pendingDelete.id));
     setPendingDelete(null);
-    setNotice("Promotion removed from this preview session only.");
+    setNotice("Promotion removed.");
   }
 
   const activeCount = promos.filter((promo) => !isExpired(promo, todayDate) && promo.isActive !== false).length;
@@ -300,7 +300,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
 
         </div>
       </header>
-      <PromoCampaignHero campaign={campaign} editable onChange={setCampaign} onSave={() => setNotice("Hero changes saved in this editing session. Permanent saving will be enabled with the backend.")} />
+      <PromoCampaignHero campaign={campaign} editable onChange={setCampaign} onSave={() => setNotice("Campaign banner updated in the editor.")} />
       <section className="mx-auto max-w-[1280px] px-6 py-7 md:px-10">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <article className="rounded-[18px] border border-[#80755F]/15 bg-[#F7F2E8] px-5 py-4">
@@ -398,7 +398,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
           </div>
         </section>
       </section>
-      {pendingDelete && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#172119]/55 px-5 py-8 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingDelete(null); }}><section role="alertdialog" aria-modal="true" aria-labelledby="delete-promo-title" className="w-full max-w-[440px] rounded-[24px] border border-[#4C5534]/10 bg-[#FFFCF3] p-6 shadow-2xl"><p className="font-montserrat text-[9px] font-semibold uppercase tracking-[0.18em] text-[#8A5148]">Remove promotion</p><h2 id="delete-promo-title" className="font-seasons mt-2 text-2xl">Are you sure?</h2><p className="mt-3 font-montserrat text-xs leading-6 text-[#80755F]">Remove <strong>{pendingDelete.title}</strong> from this editing session?</p><div className="mt-7 flex justify-end gap-2"><button type="button" onClick={() => setPendingDelete(null)} className="min-h-11 rounded-full border border-[#4C5534]/20 px-5 font-montserrat text-[9px] font-semibold uppercase">Cancel</button><button type="button" onClick={confirmDelete} className="min-h-11 rounded-full bg-[#8A5148] px-5 font-montserrat text-[9px] font-semibold uppercase text-white">Remove</button></div></section></div>}
+      {pendingDelete && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#172119]/55 px-5 py-8 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingDelete(null); }}><section role="alertdialog" aria-modal="true" aria-labelledby="delete-promo-title" className="w-full max-w-[440px] rounded-[24px] border border-[#4C5534]/10 bg-[#FFFCF3] p-6 shadow-2xl"><p className="font-montserrat text-[9px] font-semibold uppercase tracking-[0.18em] text-[#8A5148]">Remove promotion</p><h2 id="delete-promo-title" className="font-seasons mt-2 text-2xl">Are you sure?</h2><p className="mt-3 font-montserrat text-xs leading-6 text-[#80755F]">Remove <strong>{pendingDelete.title}</strong> from the promotions list?</p><div className="mt-7 flex justify-end gap-2"><button type="button" onClick={() => setPendingDelete(null)} className="min-h-11 rounded-full border border-[#4C5534]/20 px-5 font-montserrat text-[9px] font-semibold uppercase">Cancel</button><button type="button" onClick={confirmDelete} className="min-h-11 rounded-full bg-[#8A5148] px-5 font-montserrat text-[9px] font-semibold uppercase text-white">Remove</button></div></section></div>}
       {notice && <div role="status" className="fixed bottom-5 right-5 z-[60] max-w-sm rounded-2xl border border-[#80755F]/15 bg-[#F7F2E8] px-5 py-4 font-montserrat text-[10px] leading-5 text-[#4F6442] shadow-xl">{notice}</div>}
     </main>
     </>

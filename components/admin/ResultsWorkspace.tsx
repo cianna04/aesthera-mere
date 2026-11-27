@@ -79,8 +79,8 @@ export default function ResultsWorkspace() {
       return;
     }
     const message = editingId
-      ? "Result updated in this preview session."
-      : "Result added in this preview session.";
+      ? "Result updated."
+      : "Result added.";
     if (editingId) {
       setItems((current) => current.map((item) => item.id === editingId ? { ...item, ...form } : item));
     } else {
@@ -95,7 +95,7 @@ export default function ResultsWorkspace() {
     setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
     if (editingId === pendingDelete.id) closeForm();
     setPendingDelete(null);
-    setNotice("Result removed from this preview session.");
+    setNotice("Result removed.");
   }
 
   const resultForm = formOpen ? (

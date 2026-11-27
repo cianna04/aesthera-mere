@@ -119,7 +119,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d8c7a7] font-seasons text-base font-semibold text-[#29382b]">AM</span>
             <span className="min-w-0">
               <span className="block truncate font-montserrat text-[11px] font-semibold">Clinic administrator</span>
-              <span className="mt-0.5 block font-montserrat text-[9px] text-white/45">Preview workspace</span>
+              <span className="mt-0.5 block font-montserrat text-[9px] text-white/45">Clinic workspace</span>
             </span>
           </div>
           <Link href="/" onClick={onNavigate} className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 font-montserrat text-[10px] font-semibold uppercase tracking-[0.12em] text-[#d8c7a7] transition-colors hover:text-white">
@@ -173,14 +173,11 @@ export default function AdminShell({ children }: { children: ReactNode }) {
           <label className="hidden w-full max-w-[360px] items-center gap-3 rounded-full border border-[#2f4434]/10 bg-white/70 px-4 py-2.5 text-[#6f786f] md:flex">
             <Icon className="h-4 w-4 shrink-0"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></Icon>
             <span className="sr-only">Search admin</span>
-            <input type="search" disabled title="Search will be enabled with the admin modules" placeholder="Search patients, bookings, treatments…" className="w-full cursor-not-allowed bg-transparent font-montserrat text-[11px] text-[#28332b] outline-none placeholder:text-[#8c918b]" />
+            <input type="search" disabled title="Search is unavailable" placeholder="Search patients, bookings, treatments…" className="w-full cursor-not-allowed bg-transparent font-montserrat text-[11px] text-[#28332b] outline-none placeholder:text-[#8c918b]" />
           </label>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            <span className="hidden items-center gap-2 rounded-full border border-[#57705b]/15 bg-[#e8eee6] px-3 py-2 font-montserrat text-[9px] font-semibold uppercase tracking-[0.11em] text-[#47604c] sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#658269]" /> Preview data
-            </span>
-            <button type="button" disabled title="Notifications will be enabled later" aria-label="Notifications preview" className="relative flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-[#2f4434]/10 bg-white/75 text-[#45584a]">
+            <button type="button" disabled title="Notifications are unavailable" aria-label="Notifications" className="relative flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-[#2f4434]/10 bg-white/75 text-[#45584a]">
               <Icon className="h-[18px] w-[18px]"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></Icon>
               <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#a47a55] ring-2 ring-white" />
             </button>

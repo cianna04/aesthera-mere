@@ -111,21 +111,21 @@ export default function ContentWorkspace({ initialEntries }: Props) {
     }
 
     closeForm();
-    setNotice("Changes are held in this preview session. Permanent saving and public-page publishing are not connected yet.");
+    setNotice("Content entry updated.");
   }
 
   function setStatus(item: ContentEntry, status: ContentStatus) {
     setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, status } : entry));
     setNotice(status === "published"
-      ? "Marked published in this preview session only. The live public page has not been changed."
-      : "Moved to draft in this preview session only. The live public page has not been changed.");
+      ? "Page status set to Published in the workspace."
+      : "Page status set to Draft.");
   }
 
   function remove() {
     if (!pendingDelete) return;
     setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
     setPendingDelete(null);
-    setNotice("Removed from this preview session only.");
+    setNotice("Content entry removed.");
   }
 
   const formPanel = formOpen ? (
@@ -292,7 +292,7 @@ export default function ContentWorkspace({ initialEntries }: Props) {
           <section role="alertdialog" aria-modal="true" aria-labelledby="delete-content-title" className="w-full max-w-[420px] rounded-[24px] border border-[#80755F]/20 bg-[#FFFCF3] p-6 shadow-2xl">
             <p className="font-montserrat text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8A5148]">Confirm removal</p>
             <h2 id="delete-content-title" className="mt-2 font-seasons text-2xl text-[#4C5534]">Delete this content?</h2>
-            <p className="mt-3 font-montserrat text-xs leading-6 text-[#80755F]">Remove “{pendingDelete.title}” from this preview session?</p>
+            <p className="mt-3 font-montserrat text-xs leading-6 text-[#80755F]">Remove “{pendingDelete.title}” from the content list?</p>
             <div className="mt-6 flex justify-end gap-2">
               <button type="button" onClick={() => setPendingDelete(null)} className="min-h-10 rounded-full border border-[#4C5534]/20 px-5 font-montserrat text-[9px] font-semibold uppercase text-[#4C5534]">Cancel</button>
               <button type="button" onClick={remove} className="min-h-10 rounded-full bg-[#8A5148] px-5 font-montserrat text-[9px] font-semibold uppercase text-white">Delete</button>

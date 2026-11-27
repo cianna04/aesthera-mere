@@ -3,7 +3,7 @@ import AppointmentsWorkspace from "@/components/admin/AppointmentsWorkspace";
 
 export const metadata: Metadata = {
   title: "Appointments | Aesthera Mère Admin",
-  description: "Design preview for managing Aesthera Mère appointments.",
+  description: "Manage appointments for Aesthera Mère.",
 };
 
 export default function AppointmentsPage() {

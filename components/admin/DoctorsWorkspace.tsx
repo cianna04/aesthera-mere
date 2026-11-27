@@ -133,7 +133,7 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
       const result = typeof reader.result === "string" ? reader.result : "";
       setImagePreview(result);
       update("image", result);
-      setNotice("Image preview loaded. It will need persistent storage when the backend is connected.");
+      setNotice("Portrait selected.");
     };
     reader.readAsDataURL(file);
   }
@@ -147,7 +147,7 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
     const now = new Date().toISOString();
     if (editingId) {
       setDoctors((current) => current.map((doctor) => doctor.id === editingId ? { ...doctor, ...form, updatedAt: now } : doctor));
-      setNotice("Profile updated in this preview session. Changes are not saved to a database yet.");
+      setNotice("Doctor profile updated.");
     } else {
       const newDoctor: DoctorProfile = {
         ...form,
@@ -157,7 +157,7 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
         updatedAt: now,
       };
       setDoctors((current) => [...current, newDoctor]);
-      setNotice("Profile added in this preview session. Changes are not saved to a database yet.");
+      setNotice("Doctor profile added.");
     }
     setEditingId(null);
     setForm(emptyForm);
@@ -187,7 +187,7 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
       ? { ...item, weeklySchedule: workingSchedule, leaveStartDate: leaveStartDate || null, leaveEndDate: leaveEndDate || null, updatedAt: new Date().toISOString() }
       : item));
     setAvailabilityDoctor(null);
-    setNotice("Availability updated in this preview session only.");
+    setNotice("Availability updated.");
   }
 
   function removeDoctor(doctor: DoctorProfile) {
@@ -199,7 +199,7 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
     setDoctors((current) => current.filter((item) => item.id !== doctorPendingDelete.id));
     if (editingId === doctorPendingDelete.id) closeForm();
     setDoctorPendingDelete(null);
-    setNotice("Profile removed from this preview session only.");
+    setNotice("Profile removed.");
   }
 
   return (
@@ -293,7 +293,6 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
                   <p className="font-montserrat text-[9px] font-semibold uppercase tracking-[0.1em] text-[#80755f]">Doctor portrait</p>
                   {imagePreview && <div className="relative mt-3 h-40 w-32 overflow-hidden rounded-xl bg-[#e9e4d8]"><Image src={imagePreview} alt="Doctor portrait preview" fill sizes="128px" className="object-cover" unoptimized={imagePreview.startsWith("data:")} /></div>}
                   <input type="file" accept="image/*" onChange={handleImage} className="mt-3 block w-full font-montserrat text-[10px] text-[#80755f] file:mr-3 file:rounded-full file:border-0 file:bg-[#4c5534] file:px-4 file:py-2 file:font-montserrat file:text-[9px] file:font-semibold file:text-white" />
-                  <p className="mt-2 font-montserrat text-[9px] leading-5 text-[#80755f]">Preview only for now. Persistent image upload will be connected to storage later.</p>
                 </div>
   
                 <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#334b39]/10 pt-4">
@@ -385,7 +384,7 @@ export default function DoctorsWorkspace({ initialDoctors }: Props) {
               Are you sure?
             </h2>
             <p id="delete-doctor-description" className="mt-3 font-montserrat text-xs leading-6 text-[#80755f]">
-              You are about to remove <strong className="font-semibold text-[#4c5534]">{doctorPendingDelete.name}</strong> from this preview list. This action only affects the current preview session and cannot be undone here.
+              You are about to remove <strong className="font-semibold text-[#4c5534]">{doctorPendingDelete.name}</strong> from the doctor directory.
             </p>
             <div className="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button

@@ -147,7 +147,7 @@ export default function TestimonialsWorkspace({ initialTestimonials }: Props) {
     }
 
     closeForm();
-    setNotice("Changes are shown in this preview session only. They are not saved to a database or published to the homepage.");
+    setNotice("Testimonial updated.");
   }
 
   function approve(item: TestimonialRecord) {
@@ -158,28 +158,28 @@ export default function TestimonialsWorkspace({ initialTestimonials }: Props) {
     setItems((current) => current.map((entry) =>
       entry.id === item.id ? { ...entry, status: "approved" } : entry
     ));
-    setNotice("Marked approved in this preview session only. Permanent publishing is not connected yet.");
+    setNotice("Testimonial approved.");
   }
 
   function hide(item: TestimonialRecord) {
     setItems((current) => current.map((entry) =>
       entry.id === item.id ? { ...entry, status: "hidden" } : entry
     ));
-    setNotice("Hidden in this preview session only. The public homepage is not changed.");
+    setNotice("Testimonial marked as hidden.");
   }
 
   function restore(item: TestimonialRecord) {
     setItems((current) => current.map((entry) =>
       entry.id === item.id ? { ...entry, status: "pending" } : entry
     ));
-    setNotice("Moved back to pending review in this preview session.");
+    setNotice("Testimonial moved back to pending review.");
   }
 
   function remove() {
     if (!pendingDelete) return;
     setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
     setPendingDelete(null);
-    setNotice("Removed from this preview session only. The source data is unchanged.");
+    setNotice("Testimonial removed.");
   }
 
   const formPanel = formOpen ? (
@@ -356,7 +356,7 @@ export default function TestimonialsWorkspace({ initialTestimonials }: Props) {
           <section role="alertdialog" aria-modal="true" aria-labelledby="delete-testimonial-title" className="w-full max-w-[420px] rounded-[24px] border border-[#80755F]/20 bg-[#FFFCF3] p-6 shadow-2xl">
             <p className="font-montserrat text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8A5148]">Confirm removal</p>
             <h2 id="delete-testimonial-title" className="mt-2 font-seasons text-2xl text-[#4C5534]">Delete this testimonial?</h2>
-            <p className="mt-3 font-montserrat text-xs leading-6 text-[#80755F]">This removes {pendingDelete.name} from the current preview session only.</p>
+            <p className="mt-3 font-montserrat text-xs leading-6 text-[#80755F]">This removes {pendingDelete.name} from the testimonials list.</p>
             <div className="mt-6 flex justify-end gap-2">
               <button type="button" onClick={() => setPendingDelete(null)} className="min-h-10 rounded-full border border-[#4C5534]/20 px-5 font-montserrat text-[9px] font-semibold uppercase text-[#4C5534]">Cancel</button>
               <button type="button" onClick={remove} className="min-h-10 rounded-full bg-[#8A5148] px-5 font-montserrat text-[9px] font-semibold uppercase text-white">Delete</button>

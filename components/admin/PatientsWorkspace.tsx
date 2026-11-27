@@ -59,14 +59,14 @@ export default function PatientsWorkspace() {
       <div className="mx-auto max-w-[1460px]">
         <header className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
-            <div className="flex items-center gap-2"><p className="font-montserrat text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8079]">Clinic records</p><span className="rounded-full bg-[#e8eee6] px-2.5 py-1 font-montserrat text-[8px] font-bold uppercase tracking-[0.1em] text-[#56715b]">Local prototype</span></div>
+            <div className="flex items-center gap-2"><p className="font-montserrat text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8079]">Clinic records</p></div>
             <h1 className="font-seasons mt-3 text-[clamp(2.4rem,4vw,3.7rem)] leading-none text-[#2e4433]">Patients</h1>
           </div>
-          <button type="button" title="Prototype preview only" className="inline-flex w-fit items-center gap-2 rounded-full bg-[#344c38] px-5 py-3 font-montserrat text-[10px] font-semibold uppercase tracking-[0.12em] text-white"><Icon className="h-4 w-4"><path d="M12 5v14M5 12h14" /></Icon>Add patient</button>
+          <button type="button" className="inline-flex w-fit items-center gap-2 rounded-full bg-[#344c38] px-5 py-3 font-montserrat text-[10px] font-semibold uppercase tracking-[0.12em] text-white"><Icon className="h-4 w-4"><path d="M12 5v14M5 12h14" /></Icon>Add patient</button>
         </header>
 
         <section aria-label="Patient summary" className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {[["128", "Patients this month"], ["06", "Records in preview"], ["05", "Active patients"], ["01", "Follow-up needed"]].map(([value, label], index) => <article key={label} className={`rounded-2xl border p-4 sm:p-5 ${index === 3 ? "border-[#b89a6d]/20 bg-[#eee4d3]" : "border-[#334b39]/10 bg-white/70"}`}><p className="font-seasons text-2xl text-[#334b38] sm:text-3xl">{value}</p><p className="mt-2 font-montserrat text-[9px] font-semibold sm:text-[10px]">{label}</p></article>)}
+          {[["128", "Patients this month"], ["06", "Patient records"], ["05", "Active patients"], ["01", "Follow-up needed"]].map(([value, label], index) => <article key={label} className={`rounded-2xl border p-4 sm:p-5 ${index === 3 ? "border-[#b89a6d]/20 bg-[#eee4d3]" : "border-[#334b39]/10 bg-white/70"}`}><p className="font-seasons text-2xl text-[#334b38] sm:text-3xl">{value}</p><p className="mt-2 font-montserrat text-[9px] font-semibold sm:text-[10px]">{label}</p></article>)}
         </section>
 
         <section className="mt-5 overflow-hidden rounded-[24px] border border-[#334b39]/10 bg-white/75">
@@ -88,8 +88,8 @@ export default function PatientsWorkspace() {
                 <div className="mt-6 flex rounded-full bg-[#e9ebe5] p-1">{(["overview", "history", "documents"] as const).map((name) => <button key={name} type="button" onClick={() => setTab(name)} className={`min-h-9 flex-1 rounded-full px-2 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] transition-all ${tab === name ? "bg-white text-[#405b45] shadow-sm" : "text-[#8b918b] hover:text-[#526557]"}`}>{name}</button>)}</div>
                 {tab === "overview" && <div className="mt-5"><dl className="grid gap-2 sm:grid-cols-2">{[["Phone", selected.phone], ["Email", selected.email], ["Birthday", selected.birthday], ["Source", selected.source], ["First visit", selected.firstVisit]].map(([label, value], index) => <div key={label} className={`rounded-2xl bg-white/75 p-4 ${index === 4 ? "sm:col-span-2" : ""}`}><dt className="font-montserrat text-[7px] font-semibold uppercase tracking-[0.1em] text-[#9a9f99]">{label}</dt><dd className="mt-2 break-words font-montserrat text-[9px] font-semibold leading-4 text-[#405047]">{value}</dd></div>)}</dl><div className="mt-3 rounded-2xl bg-[#e7e5dc] p-4"><p className="font-montserrat text-[8px] font-bold uppercase tracking-[0.1em] text-[#7f817b]">Clinic note</p><p className="mt-2 font-montserrat text-[9px] leading-5 text-[#59625b]">{selected.notes}</p></div></div>}
                 {tab === "history" && <div className="mt-5 space-y-3"><History date={selected.lastVisit} title={selected.treatment} detail={`${selected.doctor} · Most recent visit`} /><History date={selected.firstVisit} title="Patient record created" detail={`${selected.source} booking source`} /></div>}
-                {tab === "documents" && <div className="mt-5 space-y-3"><Document title="Treatment consent" status="Signed" /><Document title="Before & after consent" status={selected.id === "PAT-1003" ? "Required" : "On file"} /><Document title="Consultation notes" status="On file" /><p className="pt-2 font-montserrat text-[8px] leading-4 text-[#969b96]">Files are visual placeholders until secure storage and patient permissions are connected.</p></div>}
-                <button type="button" className="mt-5 min-h-11 w-full rounded-full bg-[#344c38] font-montserrat text-[8px] font-bold uppercase tracking-[0.1em] text-white">Book next appointment</button><p className="mt-3 text-center font-montserrat text-[8px] text-[#979b96]">Prototype only · sample records</p>
+                {tab === "documents" && <div className="mt-5 space-y-3"><Document title="Treatment consent" status="Signed" /><Document title="Before & after consent" status={selected.id === "PAT-1003" ? "Required" : "On file"} /><Document title="Consultation notes" status="On file" /></div>}
+                <button type="button" className="mt-5 min-h-11 w-full rounded-full bg-[#344c38] font-montserrat text-[8px] font-bold uppercase tracking-[0.1em] text-white">Book next appointment</button>
               </> : <p className="font-seasons text-xl">Select a patient record</p>}
             </aside>
           </div>

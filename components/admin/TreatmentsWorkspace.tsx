@@ -94,7 +94,7 @@ export default function TreatmentsWorkspace({ initialTreatments }: Props) {
     reader.onload = () => {
       const value = typeof reader.result === "string" ? reader.result : "";
       setImagePreview(value); update("image", value); update("imageAvailable", true);
-      setNotice("Image preview loaded. Persistent storage will be connected with the backend.");
+      setNotice("Treatment image selected.");
     };
     reader.readAsDataURL(file);
   }
@@ -106,10 +106,10 @@ export default function TreatmentsWorkspace({ initialTreatments }: Props) {
     const now = new Date().toISOString();
     if (editingId) {
       setItems((current) => current.map((item) => item.id === editingId ? { ...item, ...form, updatedAt: now } : item));
-      setNotice("Treatment updated in this preview session only. It is not saved to a database.");
+      setNotice("Treatment updated.");
     } else {
       setItems((current) => [...current, { ...form, id: `treatment-${Date.now()}`, createdAt: now, updatedAt: now }]);
-      setNotice("Treatment added in this preview session only. It is not saved to a database.");
+      setNotice("Treatment added.");
     }
     closeForm();
   }
@@ -119,7 +119,7 @@ export default function TreatmentsWorkspace({ initialTreatments }: Props) {
         ? { ...entry, isAvailable: !entry.isAvailable, updatedAt: new Date().toISOString() }
         : entry,
     ));
-    setNotice(`${item.name} marked ${item.isAvailable ? "unavailable" : "available"} in this preview session only.`);
+    setNotice(`${item.name} marked ${item.isAvailable ? "unavailable" : "available"}.`);
   }
 
   function confirmDelete() {
@@ -127,7 +127,7 @@ export default function TreatmentsWorkspace({ initialTreatments }: Props) {
     setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
     if (editingId === pendingDelete.id) closeForm();
     setPendingDelete(null);
-    setNotice("Treatment removed from this preview session only.");
+    setNotice("Treatment removed.");
   }
 
   return (
@@ -200,7 +200,7 @@ export default function TreatmentsWorkspace({ initialTreatments }: Props) {
               <label className="block"><span className="mb-1.5 block font-montserrat text-[9px] font-semibold uppercase text-[#80755f]">Duration</span><input value={form.duration} onChange={(event) => update("duration", event.target.value)} className="min-h-11 w-full rounded-xl border border-[#334b39]/15 bg-[#fffcf3] px-3 font-montserrat text-xs" /></label>
               <label className="block"><span className="mb-1.5 block font-montserrat text-[9px] font-semibold uppercase text-[#80755f]">Sessions</span><input value={form.sessions} onChange={(event) => update("sessions", event.target.value)} className="min-h-11 w-full rounded-xl border border-[#334b39]/15 bg-[#fffcf3] px-3 font-montserrat text-xs" /></label>
               <label className="block md:col-span-2"><span className="mb-1.5 block font-montserrat text-[9px] font-semibold uppercase text-[#80755f]">Downtime / recovery</span><input value={form.downtime} onChange={(event) => update("downtime", event.target.value)} className="min-h-11 w-full rounded-xl border border-[#334b39]/15 bg-[#fffcf3] px-3 font-montserrat text-xs" /></label>
-              <div className="md:col-span-2 rounded-2xl border border-dashed border-[#334b39]/20 bg-[#fffcf3] p-4"><p className="font-montserrat text-[9px] font-semibold uppercase text-[#80755f]">Treatment image</p>{imagePreview && <div className="relative mt-3 h-36 w-36 overflow-hidden rounded-xl"><Image src={imagePreview} alt="Treatment preview" fill sizes="144px" className="object-cover" unoptimized /></div>}<input type="file" accept="image/*" onChange={handleImage} className="mt-3 block w-full font-montserrat text-[10px] text-[#80755f] file:mr-3 file:rounded-full file:border-0 file:bg-[#4c5534] file:px-4 file:py-2 file:font-montserrat file:text-[9px] file:font-semibold file:text-white" /><p className="mt-2 font-montserrat text-[9px] text-[#80755f]">Preview only until persistent storage is connected.</p></div>
+              <div className="md:col-span-2 rounded-2xl border border-dashed border-[#334b39]/20 bg-[#fffcf3] p-4"><p className="font-montserrat text-[9px] font-semibold uppercase text-[#80755f]">Treatment image</p>{imagePreview && <div className="relative mt-3 h-36 w-36 overflow-hidden rounded-xl"><Image src={imagePreview} alt="Treatment preview" fill sizes="144px" className="object-cover" unoptimized /></div>}<input type="file" accept="image/*" onChange={handleImage} className="mt-3 block w-full font-montserrat text-[10px] text-[#80755f] file:mr-3 file:rounded-full file:border-0 file:bg-[#4c5534] file:px-4 file:py-2 file:font-montserrat file:text-[9px] file:font-semibold file:text-white" /></div>
               <div className="md:col-span-2 flex flex-wrap items-center justify-end gap-3 border-t border-[#334b39]/10 pt-4"><button type="submit" className="min-h-11 rounded-full bg-[#4c5534] px-6 font-montserrat text-[10px] font-semibold uppercase tracking-[0.1em] text-white">{editingId ? "Save changes" : "Add treatment"}</button></div>
             </form>
           </section>
@@ -214,7 +214,7 @@ export default function TreatmentsWorkspace({ initialTreatments }: Props) {
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f3e8e2] text-[#8a5148]"><Icon><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 10v6m4-6v6" /></Icon></div>
             <p className="mt-5 font-montserrat text-[9px] font-semibold uppercase tracking-[0.18em] text-[#8a5148]">Remove treatment</p>
             <h2 id="delete-treatment-title" className="font-seasons mt-2 text-2xl text-[#4c5534]">Are you sure?</h2>
-            <p className="mt-3 font-montserrat text-xs leading-6 text-[#80755f]">Remove <strong className="font-semibold text-[#4c5534]">{pendingDelete.name}</strong> from this preview list? This does not delete public website data.</p>
+            <p className="mt-3 font-montserrat text-xs leading-6 text-[#80755f]">Remove <strong className="font-semibold text-[#4c5534]">{pendingDelete.name}</strong> from the treatment list?</p>
             <div className="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={() => setPendingDelete(null)} className="min-h-11 rounded-full border border-[#334b39]/20 px-5 font-montserrat text-[9px] font-semibold uppercase text-[#526557]">Cancel</button><button type="button" onClick={confirmDelete} className="min-h-11 rounded-full bg-[#8d5148] px-5 font-montserrat text-[9px] font-semibold uppercase text-white">Yes, remove</button></div>
           </section>
         </div>

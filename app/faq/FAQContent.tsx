@@ -49,10 +49,10 @@ export default function FAQContent() {
   return (
     <>
       <section className="border-b border-[#80755F]/15 px-6 py-10 md:px-10 md:py-12">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mx-auto max-w-[1280px] text-center">
           <div>
             <p className="font-montserrat text-[10px] font-semibold uppercase tracking-[0.2em] text-[#80755F]">
-              Aesthera Mère · Help Centre
+              Aesthera Mère · Help Center
             </p>
             <h1 className="font-seasons mt-2 text-[clamp(2.4rem,5vw,4rem)] leading-none text-[#4C5534]">
               Questions, answered.
@@ -116,11 +116,6 @@ export default function FAQContent() {
             <p className="font-montserrat text-xs leading-6 text-[#80755F]">
               Have a question that is not listed? Reach out to the clinic for assistance with your specific concern.
             </p>
-            <BookingTrigger
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-[#4C5534] px-6 font-montserrat text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#4C5534]"
-            >
-              Ask about a treatment
-            </BookingTrigger>
           </div>
         </aside>
 
@@ -144,6 +139,7 @@ export default function FAQContent() {
               {visibleFAQs.map((item, index) => {
                 const open = openId === item.id;
                 const answerId = `faq-answer-${item.id}`;
+                const showsBookingAction = /\b(book|booking|consultation)\b/i.test(item.question);
                 return (
                   <article key={item.id} className="py-1">
                     <button
@@ -173,6 +169,9 @@ export default function FAQContent() {
                         <p className="max-w-[680px] font-montserrat text-sm leading-7 text-[#777568]">
                           {item.answer}
                         </p>
+                        {showsBookingAction && (
+                          <BookingTrigger className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#4C5534] px-6 font-montserrat text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#4C5534]" />
+                        )}
                       </div>
                     )}
                   </article>
