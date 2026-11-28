@@ -177,7 +177,7 @@ export default function PatientsWorkspace() {
         </header>
 
         <section aria-label="Patient summary" className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {[[String(patientsThisMonth).padStart(2, "0"), "Patients this month"], [String(patients.length).padStart(2, "0"), "Patient records"], [String(patients.filter((patient) => patient.status === "Active").length).padStart(2, "0"), "Active patients"], [String(bookings.filter((booking) => booking.status === "Pending").length).padStart(2, "0"), "Follow-up needed"]].map(([value, label], index) => <article key={label} className={`rounded-2xl border p-4 sm:p-5 ${index === 3 ? "border-[#b89a6d]/20 bg-[#eee4d3]" : "border-[#334b39]/10 bg-white/70"}`}><p className="font-seasons text-2xl text-[#334b38] sm:text-3xl">{value}</p><p className="mt-2 font-montserrat text-[9px] font-semibold sm:text-[10px]">{label}</p></article>)}
+          {[[patientsThisMonth, "Patients this month"], [patients.length, "Patient records"], [patients.filter((patient) => patient.status === "Active").length, "Active patients"], [bookings.filter((booking) => booking.status === "Pending").length, "Follow-up needed"]].map(([value, label], index) => <article key={label} className={`rounded-2xl border p-4 sm:p-5 ${index === 3 ? "border-[#b89a6d]/20 bg-[#eee4d3]" : "border-[#334b39]/10 bg-white/70"}`}><p className="font-seasons text-2xl text-[#334b38] sm:text-3xl">{value}</p><p className="mt-2 font-montserrat text-[9px] font-semibold sm:text-[10px]">{label}</p></article>)}
         </section>
 
         <section className="mt-5 overflow-hidden rounded-[24px] border border-[#334b39]/10 bg-white/75">

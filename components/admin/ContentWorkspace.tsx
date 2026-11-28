@@ -186,7 +186,7 @@ export default function ContentWorkspace({ initialEntries }: Props) {
             { label: "Content sections", value: counts.categories },
           ].map((stat) => (
             <article key={stat.label} className="rounded-[18px] border border-[#80755F]/15 bg-[#F7F2E8] px-5 py-4">
-              <p className="font-seasons text-3xl text-[#4C5534]">{stat.value.toString().padStart(2, "0")}</p>
+              <p className="font-seasons text-3xl text-[#4C5534]">{stat.value}</p>
               <p className="mt-1 font-montserrat text-[9px] font-semibold uppercase tracking-wide text-[#80755F]">{stat.label}</p>
             </article>
           ))}

@@ -127,9 +127,9 @@ export default function ResultsWorkspace() {
               <h1 className="mt-2 font-seasons text-[clamp(2.2rem,4vw,3.2rem)] leading-none text-[#4C5534]">Results</h1>
             </div>
             <div className="flex flex-wrap items-end gap-6">
-              <div><p className="font-seasons text-3xl leading-none text-[#4C5534]">{items.length.toString().padStart(2, "0")}</p><p className="mt-1.5 font-montserrat text-[8px] font-semibold uppercase tracking-[0.15em] text-[#80755F]">Comparisons</p></div>
+              <div><p className="font-seasons text-3xl leading-none text-[#4C5534]">{items.length}</p><p className="mt-1.5 font-montserrat text-[8px] font-semibold uppercase tracking-[0.15em] text-[#80755F]">Comparisons</p></div>
               <div className="h-9 w-px bg-[#80755F]/25" />
-              <div><p className="font-seasons text-3xl leading-none text-[#4C5534]">{new Set(items.map((item) => item.title)).size.toString().padStart(2, "0")}</p><p className="mt-1.5 font-montserrat text-[8px] font-semibold uppercase tracking-[0.15em] text-[#80755F]">Treatments</p></div>
+              <div><p className="font-seasons text-3xl leading-none text-[#4C5534]">{new Set(items.map((item) => item.title)).size}</p><p className="mt-1.5 font-montserrat text-[8px] font-semibold uppercase tracking-[0.15em] text-[#80755F]">Treatments</p></div>
               <button type="button" onClick={openAdd} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#4C5534] px-5 font-montserrat text-[9px] font-bold uppercase tracking-[0.1em] text-white transition-colors hover:bg-[#35452F]"><Icon><path d="M12 5v14M5 12h14" /></Icon> Add result</button>
             </div>
           </div>

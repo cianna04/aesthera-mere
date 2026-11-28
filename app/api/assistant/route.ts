@@ -36,15 +36,21 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unable to read that question. Please try again." }, { status: 400, headers });
   }
   if (!body || typeof body !== "object") return Response.json({ error: "Please enter a question of 1–600 characters." }, { status: 400, headers });
-  const { message, contextId } = body as Record<string, unknown>;
+  const { message, contextId, nickname } = body as Record<string, unknown>;
   if (typeof message !== "string" || !message.trim() || message.length > 600 || /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(message)) {
     return Response.json({ error: "Please enter a question of 1–600 characters." }, { status: 400, headers });
   }
   if (contextId !== undefined && (typeof contextId !== "string" || !/^[a-z0-9-]{1,120}$/.test(contextId))) {
     return Response.json({ error: "Invalid conversation context." }, { status: 400, headers });
   }
+  const safeNickname = typeof nickname === "string" ? nickname.trim().replace(/\s+/g, " ") : "";
+  if (nickname !== undefined && (typeof nickname !== "string" || !/^[\p{L}\p{N} .'-]{1,30}$/u.test(safeNickname))) {
+    return Response.json({ error: "Please use a short nickname with letters or numbers only." }, { status: 400, headers });
+  }
   try {
-    return Response.json(await answerQuestion(message.trim(), contextId as string | undefined), { headers });
+    const answer = await answerQuestion(message.trim(), contextId as string | undefined);
+    if (safeNickname) answer.text = `Hi **${safeNickname}**. ${answer.text}`;
+    return Response.json(answer, { headers });
   } catch {
     return Response.json({ error: "The assistant is temporarily unavailable. Please try again or contact the clinic." }, { status: 503, headers });
   }

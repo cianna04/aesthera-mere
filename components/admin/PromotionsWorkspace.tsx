@@ -374,7 +374,7 @@ export default function PromotionsWorkspace({ initialPromos, initialPricingTable
 
         <section className="mt-12 border-t border-[#80755F]/15 pt-8">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <div><h2 className="font-seasons text-2xl text-[#4C5534]">Treatment packages</h2><p className="mt-1 font-montserrat text-[10px] text-[#80755F]">Edit the package names, descriptions and pricing shown on the public page.</p></div>
+            <div><h2 className="font-seasons text-2xl text-[#4C5534]">Treatment packages</h2></div>
             <div className="inline-flex rounded-full border border-[#80755F]/20 bg-white p-1">
               <button type="button" onClick={() => setActiveTableTab("facials")} className={`rounded-full px-4 py-2 font-montserrat text-[9px] font-semibold ${activeTableTab === "facials" ? "bg-[#4C5534] text-white" : "text-[#4C5534]"}`}>Facial packages</button>
               <button type="button" onClick={() => setActiveTableTab("drips")} className={`rounded-full px-4 py-2 font-montserrat text-[9px] font-semibold ${activeTableTab === "drips" ? "bg-[#4C5534] text-white" : "text-[#4C5534]"}`}>Aesthera drips</button>

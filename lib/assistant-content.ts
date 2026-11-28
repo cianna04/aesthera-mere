@@ -68,15 +68,34 @@ export function treatmentMatchScore(query: string, searchable: string, aliases: 
 export function buildTreatmentAnswer(treatment: TreatmentKnowledge): string {
   const lines = [
     `**${treatment.name}:** ${treatment.description}`,
-    `**${treatment.priceLabel}: ${treatment.price}**`,
+    "",
+    buildTreatmentPriceBlock(treatment),
   ];
-  if (treatment.packagePrice) lines.push(`**Package: ${treatment.packagePrice}**`);
   if (treatment.priceNote) lines.push(`**Price details:** ${treatment.priceNote}`);
   if (treatment.sessions) lines.push(`**Sessions:** ${treatment.sessions}`);
   if (treatment.duration) lines.push(`**Duration:** ${treatment.duration}`);
   if (treatment.downtime) lines.push(`**Preparation/recovery note:** ${treatment.downtime}`);
   if (treatment.benefits?.length) lines.push(`**Designed for:** ${treatment.benefits.join("; ")}`);
   lines.push("The clinic confirms the final treatment area, inclusions, price, and suitability before treatment.");
+  return lines.join("\n");
+}
+
+const priceParts = (value: string) => value.split(";").map((part) => part.trim()).filter(Boolean);
+
+export function buildTreatmentPriceBlock(treatment: Pick<TreatmentKnowledge, "price" | "priceLabel" | "packagePrice">): string {
+  const lines = [
+    `**${treatment.priceLabel}**`,
+    ...priceParts(treatment.price).map((price) => `- ${price}`),
+  ];
+
+  if (treatment.packagePrice) {
+    const packageWithDivider = treatment.packagePrice.match(/^(.+?)\s*[—–]\s*(.+)$/);
+    const compactPackage = treatment.packagePrice.match(/^(\d+\+\d+)(?:\s+package)?:\s*(.+)$/i);
+    const packageTitle = packageWithDivider?.[1]?.trim() || compactPackage?.[1]?.trim() || "";
+    const packageDetails = packageWithDivider?.[2] || compactPackage?.[2] || treatment.packagePrice;
+    lines.push("", `**Package${packageTitle ? ` ${packageTitle}` : ""}**`, ...priceParts(packageDetails).map((price) => `- ${price}`));
+  }
+
   return lines.join("\n");
 }
 

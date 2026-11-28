@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import FAQContent from "./FAQContent";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions | Aesthera Mère",
+  title: "FAQs | Aesthera Mère",
   description:
     "Find helpful information about Aesthera Mère consultations, treatments, promotions, and clinic visits.",
 };

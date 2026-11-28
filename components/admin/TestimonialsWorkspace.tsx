@@ -265,13 +265,13 @@ export default function TestimonialsWorkspace({ initialTestimonials }: Props) {
       <div className="mx-auto max-w-[1280px] px-6 pt-7 md:px-10">
         <section className="mb-6 grid grid-cols-4 gap-3">
           {[
-            { label: "Total entries", value: counts.total, description: "All testimonial records" },
-            { label: "Needs review", value: counts.pending, description: "Pending or legacy entries" },
-            { label: "Approved", value: counts.approved, description: "Permission record required" },
-            { label: "Hidden", value: counts.hidden, description: "Not approved for display" },
+            { label: "Total entries", value: counts.total },
+            { label: "Needs review", value: counts.pending },
+            { label: "Approved", value: counts.approved },
+            { label: "Hidden", value: counts.hidden },
           ].map((stat) => (
             <article key={stat.label} className="rounded-[20px] border border-[#334b39]/10 bg-white/75 p-5">
-              <p className="font-seasons text-3xl text-[#4c5534]">{stat.value.toString().padStart(2, "0")}</p>
+              <p className="font-seasons text-3xl text-[#4c5534]">{stat.value}</p>
               <p className="mt-2 font-montserrat text-[10px] font-semibold text-[#80755f]">{stat.label}</p>
             </article>
           ))}

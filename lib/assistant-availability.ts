@@ -150,3 +150,26 @@ export function unknownDoctorAvailabilityMessage(
     : "Use **Book Now** to ask the clinic directly. This does not guarantee the doctor or appointment schedule.";
   return `${intro}${dayLines.length ? `\n\n${dayLines.join("\n")}` : ""}\n\n${closing}`;
 }
+
+export function unknownDoctorMessage(
+  language: AssistantAvailabilityLanguage,
+  doctorReference: string,
+  doctors: DoctorProfile[],
+  bookingRequested = false,
+) {
+  const verifiedDoctors = doctors.map((doctor) => `**${doctor.shortName}**`).join(", ");
+  if (language === "fil") {
+    const intro = `Wala si **${doctorReference}** sa current verified Aesthera Mère doctor profiles, kaya hindi ko siya maipapakilala o maituturing na clinic doctor.`;
+    const verified = `Ang currently listed doctors ay ${verifiedDoctors}.`;
+    const booking = bookingRequested
+      ? "Maaari mo pa ring gamitin ang **Book Now** para direktang magtanong sa clinic, pero hindi nito kino-confirm ang doctor o appointment."
+      : "Kung ibang pangalan o spelling ang tinutukoy mo, sabihin mo lang at iche-check ko ulit sa verified profiles.";
+    return `${intro}\n\n${verified}\n\n${booking}`;
+  }
+  const intro = `**${doctorReference}** is not in the current verified Aesthera Mère doctor profiles, so I cannot present or treat them as a clinic doctor.`;
+  const verified = `The currently listed doctors are ${verifiedDoctors}.`;
+  const booking = bookingRequested
+    ? "You can still use **Book Now** to ask the clinic directly, but this does not confirm the doctor or appointment."
+    : "If you meant another name or spelling, tell me and I’ll check the verified profiles again.";
+  return `${intro}\n\n${verified}\n\n${booking}`;
+}

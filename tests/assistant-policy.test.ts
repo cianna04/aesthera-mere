@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 // Node's built-in TypeScript runner requires the explicit extension; the app
 // compiler resolves the same module through Next.js without this test import.
 // @ts-expect-error allowImportingTsExtensions is intentionally test-runner-only.
-import { classifyPriorityIntent, isBookingIntent, languageFor, type PriorityIntent } from "../lib/assistant-policy.ts";
+import { asksAssistantIdentity, asksClinicLocation, asksDoctorOverview, asksDoctorProfile, asksGeneralPriceList, asksPromotionOverview, classifyPriorityIntent, isBookingIntent, languageFor, type PriorityIntent } from "../lib/assistant-policy.ts";
 
 type Scenario = {
   input: string;
@@ -213,4 +213,42 @@ test("scenario catalog includes all required reporting fields", () => {
     assert.ok(scenario.input && scenario.expectedBehavior && scenario.safety);
     assert.equal(typeof scenario.bookVisible, "boolean");
   }
+});
+
+test("clinic location recognizes natural English, Filipino, Taglish, and shorthand", () => {
+  for (const question of [
+    "where are you located??",
+    "Where can I find the clinic?",
+    "where r u",
+    "Saan kayo banda?",
+    "Nasaan ang Aesthera Mere?",
+    "Paano pumunta sa clinic?",
+  ]) assert.equal(asksClinicLocation(question), true, question);
+});
+
+test("assistant identity questions are handled as in-scope", () => {
+  for (const question of ["who are you", "what can you do?", "sino kayo", "ano kang assistant?"]) {
+    assert.equal(asksAssistantIdentity(question), true, question);
+  }
+});
+
+test("generic promotion questions recognize sale wording", () => {
+  for (const question of ["ano mga sale niyo??", "May sale ba ngayon?", "what deals do you have", "current offers please"]) {
+    assert.equal(asksPromotionOverview(question), true, question);
+  }
+});
+
+test("generic treatment price-list wording stays in scope", () => {
+  for (const question of ["pricelist", "treatment pricelist", "treatment price list", "prices of all treatments", "listahan ng presyo", "magkano mga treatments"]) {
+    assert.equal(asksGeneralPriceList(question), true, question);
+  }
+  assert.equal(asksGeneralPriceList("facial price"), false);
+});
+
+test("doctor list and individual profile questions are distinct", () => {
+  assert.equal(asksDoctorOverview("sino mga doctors niyo?"), true);
+  assert.equal(asksDoctorOverview("who are your physicians?"), true);
+  assert.equal(asksDoctorProfile("who is doc ian"), true);
+  assert.equal(asksDoctorProfile("Tell me about Dr. Raine"), true);
+  assert.equal(asksDoctorProfile("Doc Dan"), true);
 });

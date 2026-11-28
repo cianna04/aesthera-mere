@@ -12,10 +12,17 @@ import {
   doctorReferenceFromQuestion,
   requestedWeekdays,
   unknownDoctorAvailabilityMessage,
+  unknownDoctorMessage,
 } from "@/lib/assistant-availability";
 import type { DoctorProfile } from "@/types/doctor";
-import { buildTreatmentAliases, buildTreatmentAnswer, normalizeSearchText, treatmentMatchScore } from "@/lib/assistant-content";
+import { buildTreatmentAliases, buildTreatmentAnswer, buildTreatmentPriceBlock, normalizeSearchText, treatmentMatchScore } from "@/lib/assistant-content";
 import {
+  asksAssistantIdentity,
+  asksClinicLocation,
+  asksDoctorOverview,
+  asksDoctorProfile,
+  asksGeneralPriceList,
+  asksPromotionOverview,
   classifyPriorityIntent,
   isAmbiguousQuestion,
   isBookingIntent,
@@ -54,7 +61,7 @@ async function websiteEntries(doctors: DoctorProfile[]): Promise<Entry[]> {
   // while this list hides legacy duplicates that the page also archives.
   const publicPromos = promos.filter((promo) => !archivedPromoIds.has(promo.id));
   const promoLine = (promo: (typeof publicPromos)[number]) =>
-    `**${promo.title}** — **${promo.promoPriceLabel || peso(promo.promoPrice) || "price confirmed by the clinic"}**`;
+    `**${promo.title}:** **${promo.promoPriceLabel || peso(promo.promoPrice) || "price confirmed by the clinic"}**`;
 
   return [
     ...FAQ_ITEMS.map((item) => ({
@@ -79,7 +86,7 @@ async function websiteEntries(doctors: DoctorProfile[]): Promise<Entry[]> {
       {
         id: `treatment-group-${group.slug}`,
         question: `${group.title} ${group.slug.replaceAll("-", " ")} ${category.name} options available list prices packages`,
-        answer: `**${group.title}:** ${group.description}\n${group.treatments.map((item) => `• **${item.name}** — **${item.priceLabel}: ${item.price}**${item.packagePrice ? ` · **Package: ${item.packagePrice}**` : ""}`).join("\n")}`,
+        answer: `**${group.title}:** ${group.description}\n\n${group.treatments.map((item) => `**${item.name}**\n${buildTreatmentPriceBlock(item)}`).join("\n\n")}`,
         href: `/treatments/${category.slug}/${group.slug}`,
         aliases: [normalizeSearchText(group.title), normalizeSearchText(group.slug)],
       },
@@ -94,7 +101,7 @@ async function websiteEntries(doctors: DoctorProfile[]): Promise<Entry[]> {
     {
       id: "doctors-overview",
       question: "Doctors physician medical team sino mga doktor doctor list expertise",
-      answer: `Aesthera Mère's medical team includes:\n${doctors.map((doctor) => `• **${doctor.name}** — ${doctor.title}${doctor.tagline ? `; ${doctor.tagline}` : ""}`).join("\n")}`,
+      answer: `Aesthera Mère's medical team includes:\n${doctors.map((doctor) => `• **${doctor.name}:** ${doctor.title}${doctor.tagline ? `; ${doctor.tagline}` : ""}`).join("\n")}`,
       href: "/doctors",
     },
     ...doctors.map((doctor) => ({
@@ -107,20 +114,20 @@ async function websiteEntries(doctors: DoctorProfile[]): Promise<Entry[]> {
       id: "promos-overview",
       question: "Current promos promotions discounts packages offers deals available ngayon list",
       answer: publicPromos.length
-        ? `Current Aesthera Mère offers:\n${publicPromos.map((promo) => `• ${promoLine(promo)}${promo.validity ? ` — ${promo.validity}` : ""}`).join("\n")}\nAvailability and eligibility are confirmed when booking.`
+        ? `Current Aesthera Mère offers:\n${publicPromos.map((promo) => `• ${promoLine(promo)}${promo.validity ? `. ${promo.validity}` : ""}`).join("\n")}\nAvailability and eligibility are confirmed when booking.`
         : "Aesthera Mère has no active promotions displayed right now.",
       href: "/promos",
     },
     ...publicPromos.map((promo) => ({
       id: `promo-${promo.id}`,
       question: `${promo.title} ${promo.subtitle} ${promo.categoryLabel} promo promotion discount offer price inclusion package`,
-      answer: `${promoLine(promo)}. ${promo.description}\nIncludes: ${promo.inclusions.join("; ")}.${promo.validity ? ` ${promo.validity}` : ""}`,
+      answer: `${promoLine(promo)}\n\n${promo.description}\n\n**Includes**\n${promo.inclusions.map((inclusion) => `- ${inclusion}`).join("\n")}${promo.validity ? `\n\n**Validity:** ${promo.validity}` : ""}`,
       href: `/promos#${promo.id}`,
     })),
     ...pricingTables.map((table) => ({
       id: `pricing-${table.id}`,
       question: `${table.title} ${table.subtitle} ${table.rows.map((row) => row.name).join(" ")} package prices pricing`,
-      answer: `${table.title} (${table.packageType}):\n${table.rows.map((row) => `• ${row.name}: regular ${peso(row.regular)}, promo ${peso(row.promo)}, package ${peso(row.package)}; effective ${peso(row.effective)} per session`).join("\n")}\nConfirm availability and final package terms with the clinic.`,
+      answer: `**${table.title}**\n${table.packageType}\n\n${table.rows.map((row) => `**${row.name}**\n- Regular: ${peso(row.regular)}\n- Promo: ${peso(row.promo)}\n- Package: ${peso(row.package)}\n- Effective per session: ${peso(row.effective)}`).join("\n\n")}\n\nConfirm availability and final package terms with the clinic.`,
       href: "/promos",
     })),
   ];
@@ -130,7 +137,7 @@ const reply = (
   text: string,
   options: { consult?: boolean; mode?: AssistantReply["mode"]; contextId?: string } = {},
 ): AssistantReply => ({
-  text,
+  text: text.replace(/\s*—\s*/g, ": "),
   sources: [],
   consult: options.consult ?? false,
   mode: options.mode ?? "website",
@@ -146,8 +153,14 @@ const medical = (language: AssistantLanguage) => reply(
 
 const outOfScope = (language: AssistantLanguage) => reply(
   language === "fil"
-    ? "Medyo outside na iyan sa Aesthera Mère assistant. Wala akong reliable Aesthera Mère information para sagutin iyon, kaya ayokong manghula. Pero kaya kitang tulungan tungkol sa treatments, displayed prices, promos, doctors, clinic hours, location, at booking."
-    : "That is a little outside the Aesthera Mère assistant's scope. I do not have reliable Aesthera Mère information to answer it, so I do not want to guess. I can still help with treatments, displayed prices, promos, doctors, clinic hours, location, and booking.",
+    ? "Aesthera Mère clinic information lang ang kaya kong sagutin nang reliable, kaya ayokong manghula tungkol diyan. Maaari mo akong tanungin tungkol sa treatments, displayed prices, promos, doctors, clinic hours, location, at booking."
+    : "I can reliably answer only questions about Aesthera Mère, so I do not want to guess about that. You can ask me about treatments, displayed prices, promos, doctors, clinic hours, location, and booking.",
+);
+
+const assistantIdentity = (language: AssistantLanguage) => reply(
+  language === "fil"
+    ? "Ako ang Aesthera Mère website assistant. Sumasagot ako gamit ang verified public information ng clinic tungkol sa treatments, displayed prices, current promos, doctors, clinic hours, location, at booking. Hindi ako doctor at hindi ako nagda-diagnose o nagko-confirm ng appointment."
+    : "I’m the Aesthera Mère website assistant. I answer using the clinic’s verified public information about treatments, displayed prices, current promos, doctors, clinic hours, location, and booking. I’m not a doctor, and I don’t diagnose conditions or confirm appointments.",
 );
 
 const nearbyPlace = (language: AssistantLanguage) => reply(
@@ -178,13 +191,13 @@ const treatmentConcern = (language: AssistantLanguage, entry: Entry) => reply(
 
 const doctorChoice = (language: AssistantLanguage, doctors: DoctorProfile[]) => reply(
   language === "fil"
-    ? `Lahat ng Aesthera Mère doctors ay qualified at may kanya-kanyang areas of focus, kaya hindi namin sila nire-rank o pinipili kung sino ang “pinaka magaling.” Ang mas mahalaga ay kung sino ang angkop sa concern, treatment needs, at available schedule mo.\n\nBase sa Aesthera Mère doctor profiles:\n${doctors.map((doctor) => `• ${doctor.name} — ${doctor.expertise.join(", ")}`).join("\n")}\n\nSabihin mo ang main concern mo para maipakita ko ang relevant options. Sa consultation, tutulungan ka ng clinic na ma-match sa appropriate doctor nang walang favoritism.`
-    : `All Aesthera Mère doctors are qualified and have their own areas of focus, so the clinic does not rank them or choose one as the “best.” What matters is finding the appropriate match for your concern, treatment needs, and available schedule.\n\nBased on their Aesthera Mère profiles:\n${doctors.map((doctor) => `• ${doctor.name} — ${doctor.expertise.join(", ")}`).join("\n")}\n\nTell me your main concern and I can show the relevant options. During consultation, the clinic can match you with an appropriate doctor without favoritism.`,
+    ? `Lahat ng Aesthera Mère doctors ay qualified at may kanya-kanyang areas of focus, kaya hindi namin sila nire-rank o pinipili kung sino ang “pinaka magaling.” Ang mas mahalaga ay kung sino ang angkop sa concern, treatment needs, at available schedule mo.\n\nBase sa Aesthera Mère doctor profiles:\n${doctors.map((doctor) => `• ${doctor.name}: ${doctor.expertise.join(", ")}`).join("\n")}\n\nSabihin mo ang main concern mo para maipakita ko ang relevant options. Sa consultation, tutulungan ka ng clinic na ma-match sa appropriate doctor nang walang favoritism.`
+    : `All Aesthera Mère doctors are qualified and have their own areas of focus, so the clinic does not rank them or choose one as the “best.” What matters is finding the appropriate match for your concern, treatment needs, and available schedule.\n\nBased on their Aesthera Mère profiles:\n${doctors.map((doctor) => `• ${doctor.name}: ${doctor.expertise.join(", ")}`).join("\n")}\n\nTell me your main concern and I can show the relevant options. During consultation, the clinic can match you with an appropriate doctor without favoritism.`,
   { consult: true },
 );
 
 const doctorOverview = (language: AssistantLanguage, doctors: DoctorProfile[]) => reply(
-  `${language === "fil" ? "Kasama sa Aesthera Mère medical team sina" : "Aesthera Mère's medical team includes"}:\n${doctors.map((doctor) => `• **${doctor.name}** — ${doctor.title}${doctor.tagline ? `; ${doctor.tagline}` : ""}`).join("\n")}`,
+  `${language === "fil" ? "Kasama sa Aesthera Mère medical team sina" : "Aesthera Mère's medical team includes"}:\n${doctors.map((doctor) => `• **${doctor.name}:** ${doctor.title}${doctor.tagline ? `; ${doctor.tagline}` : ""}`).join("\n")}`,
 );
 
 const doctorAppearance = (language: AssistantLanguage) => reply(
@@ -201,7 +214,7 @@ const doctorPersonalOpinion = (language: AssistantLanguage) => reply(
 
 const clinicComparison = (language: AssistantLanguage) => reply(
   language === "fil"
-    ? "Hindi ako makakapagsabi na mas maganda o mas mahusay ang Aesthera Mère kaysa sa ibang clinic nang walang objective at current comparison. Magkakaiba ang clinics sa doctors, services, equipment, pricing, at approach sa consultation.\n\nSa Aesthera Mère, available ang personalized consultations, carefully selected aesthetic and wellness treatments, displayed prices, at doctor profiles. Para makapili nang maayos, ikumpara ang practitioner credentials, treatment options, safety process, total cost, at kung gaano kalinaw ang consultation—then piliin ang clinic na akma sa needs at comfort level mo."
+    ? "Hindi ako makakapagsabi na mas maganda o mas mahusay ang Aesthera Mère kaysa sa ibang clinic nang walang objective at current comparison. Magkakaiba ang clinics sa doctors, services, equipment, pricing, at approach sa consultation.\n\nSa Aesthera Mère, available ang personalized consultations, carefully selected aesthetic and wellness treatments, displayed prices, at doctor profiles. Para makapili nang maayos, ikumpara ang practitioner credentials, treatment options, safety process, total cost, at kung gaano kalinaw ang consultation. Pagkatapos, piliin ang clinic na akma sa needs at comfort level mo."
     : "I cannot claim that Aesthera Mère is better than another clinic without an objective and current comparison. Clinics may differ in their doctors, services, equipment, pricing, and consultation approach.\n\nAesthera Mère offers personalized consultations, carefully selected aesthetic and wellness treatments, displayed prices, and doctor profiles. To make an informed choice, compare practitioner credentials, treatment options, safety processes, total cost, and the clarity of the consultation, then choose the clinic that fits your needs and comfort level.",
 );
 
@@ -217,8 +230,8 @@ const doctorForConcern = (language: AssistantLanguage, doctors: DoctorProfile[],
   const focus = [doctor.tagline, ...doctor.expertise].filter(Boolean).join(", ");
   return reply(
     language === "fil"
-      ? `Base sa Aesthera Mère doctor profiles, si ${doctor.name} ang may listed focus sa ${focus}. Hindi pa ito automatic na personal recommendation o guarantee na siya ang final doctor mo—kailangang i-review ng clinic ang concern, schedule, at treatment na kailangan. Mag-book ng consultation para ma-match ka nang maayos.`
-      : `Based on the Aesthera Mère doctor profiles, ${doctor.name} has a listed focus in ${focus}. This is not yet a personal recommendation or a guarantee that they will be your final doctor—the clinic needs to review your concern, schedule, and possible treatment. Book a consultation for an appropriate match.`,
+      ? `Base sa Aesthera Mère doctor profiles, si ${doctor.name} ang may listed focus sa ${focus}. Hindi pa ito automatic na personal recommendation o guarantee na siya ang final doctor mo. Kailangang i-review ng clinic ang concern, schedule, at treatment na kailangan. Mag-book ng consultation para ma-match ka nang maayos.`
+      : `Based on the Aesthera Mère doctor profiles, ${doctor.name} has a listed focus in ${focus}. This is not yet a personal recommendation or a guarantee that they will be your final doctor. The clinic needs to review your concern, schedule, and possible treatment. Book a consultation for an appropriate match.`,
     { consult: true },
   );
 };
@@ -258,8 +271,8 @@ const rescheduleReply = (language: AssistantLanguage) => reply(
 
 const clarification = (language: AssistantLanguage) => reply(
   language === "fil"
-    ? "Alin ang gusto mong malaman—treatment, price, promo, doctor, clinic hours, location, o appointment request? Banggitin ang pangalan o concern para maibigay ko ang tamang Aesthera Mère information."
-    : "What would you like to know about—a treatment, price, promo, doctor, clinic hours, location, or appointment request? Mention the name or concern so I can give you the right Aesthera Mère information.",
+    ? "Alin ang gusto mong malaman: treatment, price, promo, doctor, clinic hours, location, o appointment request? Banggitin ang pangalan o concern para maibigay ko ang tamang Aesthera Mère information."
+    : "What would you like to know about: a treatment, price, promo, doctor, clinic hours, location, or appointment request? Mention the name or concern so I can give you the right Aesthera Mère information.",
 );
 
 const securityBoundary = (language: AssistantLanguage) => reply(
@@ -276,8 +289,8 @@ const emergency = (language: AssistantLanguage) => reply(
 
 const bookingInformation = (language: AssistantLanguage) => reply(
   language === "fil"
-    ? "Pindutin ang “Book a consultation” sa ibaba para buksan ang Aesthera Mère appointment request form. Ang form ay request lamang—clinic staff pa rin ang magko-confirm ng doctor, treatment, date, at final schedule. Hindi ako direktang gumagawa o nagko-confirm ng booking sa chat."
-    : "Tap “Book a consultation” below to open the Aesthera Mère appointment request form. The form sends a request only—the clinic staff still confirm the doctor, treatment, date, and final schedule. I cannot create or confirm a booking inside this chat.",
+    ? "Pindutin ang “Book a consultation” sa ibaba para buksan ang Aesthera Mère appointment request form. Request lamang ang form. Clinic staff pa rin ang magko-confirm ng doctor, treatment, date, at final schedule. Hindi ako direktang gumagawa o nagko-confirm ng booking sa chat."
+    : "Tap “Book a consultation” below to open the Aesthera Mère appointment request form. The form sends a request only. Clinic staff still confirm the doctor, treatment, date, and final schedule. I cannot create or confirm a booking inside this chat.",
   { consult: true },
 );
 
@@ -345,15 +358,15 @@ const treatmentOptionsInformation = (
         : "";
   const topic = allHairRemoval ? `${area ? `${area} ` : ""}hair removal` : "your question";
   const list = treatments.map((treatment) =>
-    `• **${treatment.name}** — **${treatment.priceLabel}: ${treatment.price}**${treatment.packagePrice ? ` · **Package: ${treatment.packagePrice}**` : ""}`,
-  ).join("\n");
+    `**${treatment.name}**\n${buildTreatmentPriceBlock(treatment)}`,
+  ).join("\n\n");
   const comparisonNote = allHairRemoval && treatments.some((treatment) => /^ipl\b/i.test(treatment.name)) && treatments.some((treatment) => /^diode\b/i.test(treatment.name))
     ? language === "fil"
       ? "Pareho ang displayed price range at package nila. Wala pang detailed IPL-versus-Diode technical comparison sa current clinic content, kaya ipa-confirm sa clinic ang device, protocol, treatment area, at final price."
       : "Both currently show the same price range and package. The clinic content does not yet publish a detailed IPL-versus-Diode technical comparison, so confirm the device, protocol, treatment area, and final price with the clinic."
     : language === "fil"
-      ? "Iko-confirm ng clinic ang differences, angkop na option, treatment area, at final price bago ang procedure."
-      : "The clinic will confirm the differences, appropriate option, treatment area, and final price before the procedure.";
+      ? "Iko-confirm ng clinic ang differences, angkop na option, inclusions, eligibility, at final price bago ang procedure."
+      : "The clinic will confirm the differences, appropriate option, inclusions, eligibility, and final price before the procedure.";
   const text = language === "fil"
     ? `Para sa ${topic}, ito ang available Aesthera Mère options at current displayed prices:\n${list}\n\n${comparisonNote}`
     : `For ${topic}, Aesthera Mère currently offers these options at the displayed prices:\n${list}\n\n${comparisonNote}`;
@@ -367,17 +380,29 @@ const facialOptionsInformation = (language: AssistantLanguage, pricesOnly: boole
   const grouped = ["Premium Facial Selections", "Elite Facial Selections"].map((collection) => {
     const items = facials.filter((facial) => facial.collection === collection);
     const lines = items.map((facial) => {
-      const price = `${facial.priceLabel}: ${facial.price}${facial.packagePrice ? ` · Package: ${facial.packagePrice}` : ""}`;
-      return pricesOnly ? `• **${facial.name}** — **${price}**` : `• **${facial.name}** — ${facial.cardDescription ?? facial.description} (**${price}**)`;
+      const details = pricesOnly ? "" : `${facial.cardDescription ?? facial.description}\n`;
+      return `**${facial.name}**\n${details}${buildTreatmentPriceBlock(facial)}`;
     });
     return `**${collection.replace(" Selections", "")}**\n${lines.join("\n")}`;
   }).join("\n\n");
   const closing = language === "fil"
-    ? "Sabihin mo ang general concern mo—halimbawa hydration, congestion, acne-prone skin, dullness, o texture—at maipapakita ko ang relevant options nang hindi gumagawa ng personal medical recommendation."
-    : "Tell me your general concern—such as hydration, congestion, acne-prone skin, dullness, or texture—and I can narrow down the relevant options without making a personal medical recommendation.";
+    ? "Sabihin mo ang general concern mo, halimbawa hydration, congestion, acne-prone skin, dullness, o texture. Maipapakita ko ang relevant options nang hindi gumagawa ng personal medical recommendation."
+    : "Tell me your general concern, such as hydration, congestion, acne-prone skin, dullness, or texture. I can narrow down the relevant options without making a personal medical recommendation.";
   return reply(language === "fil"
     ? `Narito ang current Aesthera Mère facial options at displayed prices:\n\n${grouped}\n\n${closing}`
     : `Here are the current Aesthera Mère facial options and displayed prices:\n\n${grouped}\n\n${closing}`);
+};
+
+const generalPriceListInformation = (language: AssistantLanguage) => {
+  const sections = treatmentCategories.map((category) =>
+    `**${category.name}**\n${category.groups.map((group) => `• ${group.title}`).join("\n")}`,
+  ).join("\n\n");
+  const closing = language === "fil"
+    ? "Maraming treatment entries ang price list, kaya sabihin mo lang kung aling section ang gusto mo. Halimbawa: facial prices, laser prices, Botox prices, fillers, body contouring, drips, o weight management. Ibibigay ko ang current displayed prices sa napili mong section."
+    : "The price list contains many treatment entries, so tell me which section you want. For example: facial prices, laser prices, Botox prices, fillers, body contouring, drips, or weight management. I will show the current displayed prices for that section.";
+  return reply(language === "fil"
+    ? `May current displayed treatment prices ang Aesthera Mère sa mga section na ito:\n\n${sections}\n\n${closing}`
+    : `Aesthera Mère has current displayed treatment prices in these sections:\n\n${sections}\n\n${closing}`);
 };
 
 async function askGemini(model: string, message: string, candidates: { id: string; question: string }[]) {
@@ -424,6 +449,10 @@ export async function answerQuestion(message: string, contextId?: string): Promi
     const availability = doctorAvailabilityMessage(language, availabilityDoctor!, requestedWeekdays(q), clinicHours);
     return reply(availability.text, { consult: true, contextId: availability.contextId });
   }
+  if (priority === null && explicitDoctorReference && !namedDoctor && (asksDoctorProfile(q) || isBookingIntent(q))) {
+    const bookingRequested = isBookingIntent(q);
+    return reply(unknownDoctorMessage(language, explicitDoctorReference, doctors, bookingRequested), { consult: bookingRequested });
+  }
   if (priority === "doctor_appearance") return doctorAppearance(language);
   if (priority === "doctor_personal_opinion") return doctorPersonalOpinion(language);
   if (priority === "doctor_comparison") return doctorChoice(language, doctors);
@@ -431,6 +460,14 @@ export async function answerQuestion(message: string, contextId?: string): Promi
   if (priority === "unverified_facility") return unverifiedFacility(language);
   if (priority === "cancel_or_reschedule") return rescheduleReply(language);
   if (priority === "medical") return medical(language);
+
+  // Resolve broad clinic intents before fuzzy matching or Gemini. These are
+  // factual website questions and must also work during an AI quota outage.
+  if (asksAssistantIdentity(q)) return assistantIdentity(language);
+  if (asksClinicLocation(q)) {
+    const answer = byId.get("contact-details")!.answer;
+    return reply(language === "fil" ? `Narito ang Aesthera Mère clinic details:\n${answer}` : answer);
+  }
 
   const validatedContext = contextId && /^[a-z0-9-]{1,120}$/.test(contextId) ? byId.get(contextId) : undefined;
   if (validatedContext && isContextFollowUp(q)) {
@@ -446,6 +483,10 @@ export async function answerQuestion(message: string, contextId?: string): Promi
   }
   if (/(?:doctor|doktor).*(?:injectable|filler|thread|botox|skin booster)|(?:injectable|filler|thread|botox|skin booster).*(?:doctor|doktor)/.test(q)) {
     return doctorForConcern(language, doctors, "dr-dan");
+  }
+  if (namedDoctor && asksDoctorProfile(q)) {
+    const profile = byId.get(`doctor-${namedDoctor.id}`);
+    if (profile) return combineEntries([profile], "website");
   }
   if (/(?:sino|who).*(?:mas|more).*(?:pogi|gwapo|handsome|maganda|pretty|attractive)|(?:pogi|gwapo|handsome|maganda|pretty|attractive).*(?:doctor|doktor|doc)|(?:doctor|doktor|doc).*(?:pogi|gwapo|handsome|maganda|pretty|attractive)/.test(q)) {
     return doctorAppearance(language);
@@ -530,15 +571,21 @@ export async function answerQuestion(message: string, contextId?: string): Promi
   if (!namesSpecificFacial && (asksFacialPrice || asksFacialOptions || /^(?:facial|facials)\??$/.test(q))) {
     return facialOptionsInformation(language, asksFacialPrice);
   }
+  if (asksGeneralPriceList(q)) return generalPriceListInformation(language);
   if (/^(hi|hello|hey|kumusta|good (morning|afternoon|evening))[!.\s]*$/.test(q)) {
     return reply(language === "fil"
       ? "Hello! Maaari kang magtanong sa Filipino o English tungkol sa Aesthera Mère treatments, displayed prices, current promos, doctors, clinic hours, location, o booking."
       : "Hello! You can ask me directly about Aesthera Mère's treatments, displayed prices, current promos, doctors, clinic hours, location, or booking.");
   }
+  if (asksDoctorOverview(q)) return doctorOverview(language, doctors);
+  if (asksPromotionOverview(q)) {
+    const answer = byId.get("promos-overview")!.answer;
+    return reply(language === "fil" ? `Narito ang current Aesthera Mère promos:\n${answer.replace(/^Current Aesthera Mère offers:\n/, "")}` : answer);
+  }
   const coreIds = [
     /\b(hours?|open|close|closed|oras|bukas|sarado)\b/.test(q) ? "clinic-hours" : "",
-    /\b(location|address|contact|phone|telephone|numero|directions|map)\b/.test(q) ? "contact-details" : "",
-    /\b(promo|promos|discount|deal|offers?)\b/.test(q) ? "promos-overview" : "",
+    asksClinicLocation(q) || /\b(contact|phone|telephone|numero)\b/.test(q) ? "contact-details" : "",
+    asksPromotionOverview(q) ? "promos-overview" : "",
     /\b(doctors?|doktors?|physicians?|medical team)\b/.test(q) ? "doctors-overview" : "",
   ].filter(Boolean).map((id) => byId.get(id)).filter((entry): entry is Entry => Boolean(entry));
   if (coreIds.length > 1) return combineEntries(coreIds.slice(0, 3), "website", isBookingIntent(q));

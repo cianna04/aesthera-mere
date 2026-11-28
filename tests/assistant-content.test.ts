@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 // @ts-expect-error Node's TypeScript test runner requires the explicit extension.
-import { buildTreatmentAliases, buildTreatmentAnswer, treatmentMatchScore } from "../lib/assistant-content.ts";
+import { buildTreatmentAliases, buildTreatmentAnswer, buildTreatmentPriceBlock, treatmentMatchScore } from "../lib/assistant-content.ts";
 
 const sample = {
   slug: "aqua-reset-facial",
@@ -17,18 +17,28 @@ const sample = {
 };
 
 test("treatment answer reads the current object instead of copied chatbot prices", () => {
-  assert.match(buildTreatmentAnswer(sample), /Per session: ₱1,280/);
-  assert.match(buildTreatmentAnswer({ ...sample, price: "₱1,380" }), /Per session: ₱1,380/);
+  assert.match(buildTreatmentAnswer(sample), /\*\*Per session\*\*\n- ₱1,280/);
+  assert.match(buildTreatmentAnswer({ ...sample, price: "₱1,380" }), /\*\*Per session\*\*\n- ₱1,380/);
 });
 test("package and per-session prices remain separately labeled", () => {
   const answer = buildTreatmentAnswer(sample);
-  assert.match(answer, /Per session: ₱1,280/);
-  assert.match(answer, /Package: 5\+1 package: ₱6,400/);
+  assert.match(answer, /\*\*Per session\*\*\n- ₱1,280/);
+  assert.match(answer, /\*\*Package 5\+1\*\*\n- ₱6,400/);
+});
+
+test("multi-dose and package prices render as readable lines", () => {
+  const block = buildTreatmentPriceBlock({
+    priceLabel: "Per session",
+    price: "2.5 mg: ₱2,490; 5 mg: ₱3,490; 7.5 mg: ₱4,490",
+    packagePrice: "3+1 — 2.5 mg: ₱7,968; 5 mg: ₱11,168; 7.5 mg: ₱14,368",
+  });
+  assert.match(block, /\*\*Per session\*\*\n- 2\.5 mg: ₱2,490\n- 5 mg: ₱3,490\n- 7\.5 mg: ₱4,490/);
+  assert.match(block, /\*\*Package 3\+1\*\*\n- 2\.5 mg: ₱7,968\n- 5 mg: ₱11,168\n- 7\.5 mg: ₱14,368/);
 });
 
 test("package notation is preserved exactly", () => {
   const answer = buildTreatmentAnswer({ ...sample, packagePrice: "10+1: ₱19,900" });
-  assert.match(answer, /10\+1: ₱19,900/);
+  assert.match(answer, /\*\*Package 10\+1\*\*\n- ₱19,900/);
   assert.doesNotMatch(answer, /11 sessions/);
 });
 

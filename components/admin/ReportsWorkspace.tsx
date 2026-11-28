@@ -371,7 +371,6 @@ export default function ReportsWorkspace() {
               <span className="rounded-full bg-[#e8eee6] px-2.5 py-1 font-montserrat text-[8px] font-bold uppercase tracking-[0.1em] text-[#56715b]">Browser-saved data</span>
             </div>
             <h1 className="font-seasons mt-3 text-[clamp(2.4rem,4vw,3.7rem)] leading-none tracking-[-0.025em] text-[#2e4433]">Reports</h1>
-            <p className="mt-3 max-w-xl font-montserrat text-[11px] leading-6 text-[#778078]">Explore booking patterns, attendance, and the busiest days from this browser’s appointment records.</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <label className="min-w-[155px] font-montserrat text-[9px] font-semibold text-[#667168]">
@@ -400,10 +399,10 @@ export default function ReportsWorkspace() {
         {!storageError && skippedCount > 0 && <p role="status" className="mt-5 rounded-2xl border border-[#b89a6d]/20 bg-[#f3eadb] px-4 py-3 font-montserrat text-[10px] leading-5 text-[#796341]">{skippedCount} malformed booking record{skippedCount === 1 ? " was" : "s were"} skipped.</p>}
 
         <section aria-label="Booking summary" className="mt-7 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <SummaryCard value={periodAppointments.length} label="Bookings" detail={range === "All time" ? "All saved records" : `In the last ${range}`} />
-          <SummaryCard value={completedCount} label="Completed" detail="Marked as completed" />
-          <SummaryCard value={cancelledCount} label="Cancellations" detail="Cancelled bookings" accent />
-          <SummaryCard value={noShowCount} label="No-shows" detail="Marked as no-show" accent />
+          <SummaryCard value={periodAppointments.length} label="Bookings" />
+          <SummaryCard value={completedCount} label="Completed" />
+          <SummaryCard value={cancelledCount} label="Cancellations" accent />
+          <SummaryCard value={noShowCount} label="No-shows" accent />
         </section>
 
         <section className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
@@ -435,12 +434,10 @@ export default function ReportsWorkspace() {
           <article className="rounded-[24px] border border-[#334b39]/10 bg-[#344b38] p-5 text-white shadow-[0_18px_45px_-28px_rgba(30,55,35,0.65)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-27px_rgba(30,55,35,0.7)] sm:p-6">
             <p className="font-montserrat text-[8px] font-bold uppercase tracking-[0.15em] text-white/45">Attendance</p>
             <h2 className="font-seasons mt-2 text-[25px] leading-none">Cancellations &amp; no-shows</h2>
-            <p className="mt-3 font-montserrat text-[9px] leading-5 text-white/60">Status counts for the selected reporting period.</p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-white/[0.07] p-4 transition-colors duration-200 hover:bg-white/[0.11]"><p className="font-seasons text-3xl text-[#e2cfad]">{cancelledCount}</p><p className="mt-2 font-montserrat text-[8px] font-semibold uppercase tracking-[0.1em] text-white/60">Cancelled</p></div>
               <div className="rounded-2xl bg-white/[0.07] p-4 transition-colors duration-200 hover:bg-white/[0.11]"><p className="font-seasons text-3xl text-[#e2cfad]">{noShowCount}</p><p className="mt-2 font-montserrat text-[8px] font-semibold uppercase tracking-[0.1em] text-white/60">No-show</p></div>
             </div>
-            <p className="mt-4 font-montserrat text-[8px] leading-4 text-white/40">No-shows appear here when an appointment is saved with a No-show status.</p>
           </article>
         </section>
 
@@ -504,11 +501,10 @@ export default function ReportsWorkspace() {
   );
 }
 
-function SummaryCard({ value, label, detail, accent = false }: { value: number; label: string; detail: string; accent?: boolean }) {
+function SummaryCard({ value, label, accent = false }: { value: number; label: string; accent?: boolean }) {
   return <article className={`rounded-2xl border p-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5 ${accent ? "border-[#b89a6d]/20 bg-[#eee4d3]" : "border-[#334b39]/10 bg-white/75"}`}>
-    <p className="font-seasons text-2xl leading-none text-[#334b38] sm:text-3xl">{String(value).padStart(2, "0")}</p>
+    <p className="font-seasons text-2xl leading-none text-[#334b38] sm:text-3xl">{value}</p>
     <p className="mt-2 font-montserrat text-[9px] font-semibold text-[#465349] sm:text-[10px]">{label}</p>
-    <p className="mt-1 font-montserrat text-[8px] text-[#8b918b]">{detail}</p>
   </article>;
 }
 

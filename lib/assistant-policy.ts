@@ -35,6 +35,41 @@ export const isBookingIntent = (q: string) =>
   /\b(book|booking|appointment|consultation|konsultasyon|schedule)\b|(?:mag|pa|magpa)[\s-]*bo+ok|bo+book|(?:mag|pa|magpa)[\s-]*schedule/.test(q)
   && !/cancel|resched|move|lipat/.test(q);
 
+/**
+ * High-level website intents that must keep working when Gemini is unavailable.
+ * These deliberately match ways people ask, rather than one exact sentence.
+ */
+export const asksAssistantIdentity = (value: string) => {
+  const q = normalizeAssistantText(value);
+  return /\b(who|what)\s+(?:are|r)\s+(?:you|u)\b|\bwhat\s+(?:can|do)\s+you\s+do\b|\b(?:who|what)\s+is\s+(?:this|the)\s+(?:assistant|chatbot|bot)\b|\b(?:sino|ano)\s+(?:ka|kang|kayo)\b|\bano(?:ng)?\s+(?:kaya|kayang)\s+(?:mo|mong)\s+gawin\b|\b(?:assistant|chatbot|bot)\s+(?:ka|kayo|ito)\b/.test(q);
+};
+
+export const asksClinicLocation = (value: string) => {
+  const q = normalizeAssistantText(value);
+  return /\b(location|located|address|directions?|map|find\s+you|find\s+(?:the\s+)?clinic)\b|\bwhere\s+(?:are|r)\s+(?:you|u)\b|\bwhere\s+(?:is|are)\b.{0,35}\b(?:clinic|aesthera)\b|\bwhere\b.{0,35}\blocated\b|\b(?:saan|nasaan)\b.{0,35}\b(?:kayo|clinic|aesthera|makikita|matatagpuan|banda)\b|\b(?:saan|nasaan)\s+(?:kayo|ang\s+clinic)\b|\bpaano\s+pumunta\b/.test(q);
+};
+
+export const asksPromotionOverview = (value: string) => {
+  const q = normalizeAssistantText(value);
+  return /\b(promos?|promotions?|discounts?|deals?|offers?|sales?)\b|\b(?:may|meron|ano|anong|what)\b.{0,30}\b(?:sale|promo|discount|deal|offer)\b|\b(?:sale|promo|discount|deal|offer)\b.{0,20}\b(?:niyo|nyo|ninyo|available|ngayon)\b/.test(q);
+};
+
+export const asksGeneralPriceList = (value: string) => {
+  const q = normalizeAssistantText(value);
+  return /\bprice\s*lists?\b|\bpricelists?\b|\btreatment\s+(?:prices?|pricing|rates?|menu)\b|\b(?:prices?|pricing|rates?)\s+(?:of|for)?\s*(?:all\s+)?treatments?\b|\b(?:listahan|lista)\s+(?:ng\s+)?(?:mga\s+)?presyo\b|\bpresyo\s+(?:ng\s+)?(?:mga\s+)?treatments?\b|\bmagkano\s+(?:ang\s+)?(?:mga\s+)?treatments?\b/.test(q);
+};
+
+export const asksDoctorOverview = (value: string) => {
+  const q = normalizeAssistantText(value);
+  return /\b(?:who|sino|sinu-sino)\b.{0,30}\b(?:doctors?|doktors?|physicians?|medical\s+team)\b|\b(?:doctors?|doktors?|physicians?|medical\s+team)\b.{0,30}\b(?:list|team|available|meron|sino)\b|^(?:doctors?|doktors?|medical\s+team)[?!.\s]*$/.test(q);
+};
+
+export const asksDoctorProfile = (value: string) => {
+  const q = normalizeAssistantText(value);
+  return /\b(?:who|sino)\s+(?:is|si)\b|\b(?:tell|kwento)\b.{0,20}\b(?:about|tungkol)\b|\b(?:about|profile|bio|biography|background|credentials?|specialt(?:y|ies)|expertise|focus)\b|\bano(?:ng)?\b.{0,20}\b(?:specialty|expertise|focus)\b/.test(q)
+    || /^(?:doc(?:tor)?|dr\.?)[\s\-]+[a-z][a-z\s.\-]{1,40}[?!.\s]*$/.test(q);
+};
+
 const isSecurityManipulation = (q: string) => {
   const override = /\b(ignore|disregard|forget|override|bypass|break|remove|disable)\b.{0,45}\b(instructions?|rules?|polic(?:y|ies)|guardrails?|safety|prompts?|restrictions?|boundaries)\b/.test(q);
   const reverseOverride = /\b(system|developer|hidden|previous|original)\b.{0,30}\b(prompt|instruction|message|rule)\b.{0,35}\b(show|reveal|print|repeat|ignore|override)\b/.test(q);

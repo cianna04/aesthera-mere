@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 // @ts-expect-error Node's TypeScript runner requires the explicit extension.
-import { asksAvailabilityQuestion, asksDoctorAvailability, doctorAvailabilityContext, doctorAvailabilityMessage, doctorFromQuestion, doctorReferenceFromQuestion, requestedWeekdays, unknownDoctorAvailabilityMessage } from "../lib/assistant-availability.ts";
+import { asksAvailabilityQuestion, asksDoctorAvailability, doctorAvailabilityContext, doctorAvailabilityMessage, doctorFromQuestion, doctorReferenceFromQuestion, requestedWeekdays, unknownDoctorAvailabilityMessage, unknownDoctorMessage } from "../lib/assistant-availability.ts";
 import type { DoctorProfile } from "../types/doctor.ts";
 
 const doctor = (id: string, name: string, shortName: string): DoctorProfile => ({
@@ -80,4 +80,26 @@ test("future verified schedules are used with confirmation wording", () => {
   const answer = doctorAvailabilityMessage("en", { ...doctors[0], scheduleVerified: true }, ["Friday"], clinicHours);
   assert.match(answer.text, /9:00 AM–5:00 PM/);
   assert.match(answer.text, /still needs to confirm final availability/i);
+});
+
+test("unknown doctor profile questions identify the name without substituting the whole team", () => {
+  const question = "sino si doc cianna";
+  const reference = doctorReferenceFromQuestion(question);
+  assert.equal(reference, "Doc Cianna");
+  assert.equal(doctorFromQuestion(question, doctors), undefined);
+  const answer = unknownDoctorMessage("fil", reference!, doctors);
+  assert.match(answer, /Wala si \*\*Doc Cianna\*\*/);
+  assert.match(answer, /Dr\. Ian|Dr\. Raine|Dr\. Dan/);
+  assert.doesNotMatch(answer, /medical team includes/i);
+});
+
+test("unknown doctor booking requests retain the booking handoff without validating the name", () => {
+  const question = "I want to book Doc Cianna";
+  const reference = doctorReferenceFromQuestion(question);
+  assert.equal(reference, "Doc Cianna");
+  assert.equal(doctorFromQuestion(question, doctors), undefined);
+  const answer = unknownDoctorMessage("en", reference!, doctors, true);
+  assert.match(answer, /not in the current verified/i);
+  assert.match(answer, /Book Now/);
+  assert.match(answer, /does not confirm the doctor or appointment/i);
 });
