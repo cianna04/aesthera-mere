@@ -251,4 +251,6 @@ test("doctor list and individual profile questions are distinct", () => {
   assert.equal(asksDoctorProfile("who is doc ian"), true);
   assert.equal(asksDoctorProfile("Tell me about Dr. Raine"), true);
   assert.equal(asksDoctorProfile("Doc Dan"), true);
+  assert.equal(asksDoctorProfile("information on Dr. Raine"), true);
+  assert.equal(asksDoctorProfile("details about Doc Ian"), true);
 });

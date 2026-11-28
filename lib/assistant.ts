@@ -662,5 +662,12 @@ export async function answerQuestion(message: string, contextId?: string): Promi
   if (selected.length > 1 && selected.every((entry) => entry.id.startsWith("treatment-"))) {
     return treatmentOptionsInformation(language, selected, q, mode, isBookingIntent(q));
   }
+  // Do not append the clinic's About story to a named doctor's profile when
+  // the classifier returns both as matches. They answer different questions.
+  if (namedDoctor) {
+    const doctorProfile = selected.find((entry) => entry.id === `doctor-${namedDoctor.id}`);
+    const explicitlyAsksClinicStory = /\b(?:aesthera|clinic)\b.{0,25}\b(?:story|history|meaning|name origin|values?)\b|\b(?:story|history|meaning|name origin|values?)\b.{0,25}\b(?:aesthera|clinic)\b/.test(q);
+    if (doctorProfile && !explicitlyAsksClinicStory) return combineEntries([doctorProfile], mode);
+  }
   return combineEntries(selected, mode, isBookingIntent(q));
 }

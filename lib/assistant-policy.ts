@@ -66,7 +66,7 @@ export const asksDoctorOverview = (value: string) => {
 
 export const asksDoctorProfile = (value: string) => {
   const q = normalizeAssistantText(value);
-  return /\b(?:who|sino)\s+(?:is|si)\b|\b(?:tell|kwento)\b.{0,20}\b(?:about|tungkol)\b|\b(?:about|profile|bio|biography|background|credentials?|specialt(?:y|ies)|expertise|focus)\b|\bano(?:ng)?\b.{0,20}\b(?:specialty|expertise|focus)\b/.test(q)
+  return /\b(?:who|sino)\s+(?:is|si)\b|\b(?:tell|kwento)\b.{0,20}\b(?:about|tungkol)\b|\b(?:information|details?)\b.{0,20}\b(?:about|on|tungkol)?\b|\b(?:about|profile|bio|biography|background|credentials?|specialt(?:y|ies)|expertise|focus)\b|\bano(?:ng)?\b.{0,20}\b(?:specialty|expertise|focus)\b/.test(q)
     || /^(?:doc(?:tor)?|dr\.?)[\s\-]+[a-z][a-z\s.\-]{1,40}[?!.\s]*$/.test(q);
 };
 
